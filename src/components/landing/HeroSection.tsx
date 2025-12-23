@@ -70,7 +70,7 @@ export function HeroSection({ onStartClick }: HeroSectionProps) {
         <Button
           size="lg"
           variant="outline"
-          className="h-14 px-8 text-lg rounded-full border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105"
+          className="h-14 px-8 text-lg rounded-full border-slate-300 dark:border-slate-700 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-white transition-all hover:scale-105"
         >
           View Demo
         </Button>
