@@ -36,7 +36,10 @@ service cloud.firestore {
 
     // User Stats collection
     match /user_stats/{userId} {
-      allow read, write: if isOwner(userId);
+      // Allow any authenticated user to read (for leaderboard)
+      // Only allow owner to write/update their own stats
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
       
       match /activity/{activityId} {
          allow read, write: if isOwner(userId);

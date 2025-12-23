@@ -21,7 +21,10 @@ export default function LandingPage() {
       />
 
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-20 text-center max-w-5xl mx-auto w-full">
-        <HeroSection onStartClick={() => navigate("/login")} />
+        <HeroSection
+          onStartClick={() => navigate("/login")}
+          onDemoClick={() => navigate("/demo")}
+        />
 
         <FeaturesSection />
       </main>

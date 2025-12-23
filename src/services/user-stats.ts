@@ -15,11 +15,21 @@ import {
 import type { UserStats } from "@/types";
 import { calculateLevel } from "@/lib/gamification";
 
-export const updateUserStreak = async (userId: string) => {
+export const updateUserStreak = async (
+  userId: string,
+  userProfile?: { displayName?: string; photoURL?: string }
+) => {
   const statsRef = doc(db, "user_stats", userId);
   const statsSnap = await getDoc(statsRef);
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const profileUpdate = userProfile
+    ? {
+        displayName: userProfile.displayName || "Anonymous",
+        photoURL: userProfile.photoURL || "",
+      }
+    : {};
 
   if (!statsSnap.exists()) {
     const initialStats: UserStats = {
@@ -27,6 +37,7 @@ export const updateUserStreak = async (userId: string) => {
       lastStudyDate: Timestamp.fromDate(now),
       xp: 0,
       level: 1,
+      ...profileUpdate,
     };
     await setDoc(statsRef, initialStats, { merge: true });
     return 1;
@@ -49,6 +60,10 @@ export const updateUserStreak = async (userId: string) => {
   let newStreak = data.streak;
 
   if (diffDays === 0) {
+    // Same day, check if we need to update profile
+    if (Object.keys(profileUpdate).length > 0) {
+      await updateDoc(statsRef, profileUpdate);
+    }
     return newStreak;
   } else if (diffDays === 1) {
     newStreak += 1;
@@ -59,6 +74,7 @@ export const updateUserStreak = async (userId: string) => {
   await updateDoc(statsRef, {
     streak: newStreak,
     lastStudyDate: Timestamp.fromDate(now),
+    ...profileUpdate,
   });
 
   return newStreak;
@@ -75,9 +91,20 @@ export const getUserStats = async (
   return null;
 };
 
-export const addXP = async (userId: string, amount: number) => {
+export const addXP = async (
+  userId: string,
+  amount: number,
+  userProfile?: { displayName?: string; photoURL?: string }
+) => {
   const statsRef = doc(db, "user_stats", userId);
   const statsSnap = await getDoc(statsRef);
+
+  const profileUpdate = userProfile
+    ? {
+        displayName: userProfile.displayName || "Anonymous",
+        photoURL: userProfile.photoURL || "",
+      }
+    : {};
 
   if (!statsSnap.exists()) {
     const level = calculateLevel(amount);
@@ -86,6 +113,7 @@ export const addXP = async (userId: string, amount: number) => {
       lastStudyDate: Timestamp.fromDate(new Date()),
       xp: amount,
       level: level,
+      ...profileUpdate,
     };
     await setDoc(statsRef, initialStats, { merge: true });
     return;
@@ -98,7 +126,24 @@ export const addXP = async (userId: string, amount: number) => {
   await updateDoc(statsRef, {
     xp: newXP,
     level: newLevel,
+    ...profileUpdate,
   });
+};
+
+export const getLeaderboard = async (limitCount = 10) => {
+  try {
+    const statsRef = collection(db, "user_stats");
+    const q = query(statsRef, orderBy("xp", "desc"), limit(limitCount));
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs.map((doc) => ({
+      userId: doc.id,
+      ...doc.data(),
+    })) as (UserStats & { userId: string })[];
+  } catch (error) {
+    console.error("Error fetching leaderboard:", error);
+    return [];
+  }
 };
 
 export const logStudyActivity = async (userId: string) => {

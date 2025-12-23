@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 
 import { VocabularyList } from "@/components/dashboard/VocabularyList";
+import { Leaderboard } from "@/components/dashboard/Leaderboard";
 
 export default function Dashboard() {
   const {
@@ -54,7 +55,7 @@ export default function Dashboard() {
           >
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
               <TabsList className="bg-slate-100 dark:bg-slate-800 p-1 relative w-full sm:w-auto">
-                {["decks", "activity", "vocab"].map((tab) => (
+                {["decks", "activity", "vocab", "leaderboard"].map((tab) => (
                   <TabsTrigger
                     key={tab}
                     value={tab}
@@ -76,7 +77,9 @@ export default function Dashboard() {
                         ? "My Decks"
                         : tab === "activity"
                         ? "Activity Log"
-                        : "Vocabulary"}
+                        : tab === "vocab"
+                        ? "Vocabulary"
+                        : "Leaderboard"}
                     </span>
                   </TabsTrigger>
                 ))}
@@ -135,6 +138,21 @@ export default function Dashboard() {
                     transition={{ duration: 0.2 }}
                   >
                     <VocabularyList cards={allCards || []} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </TabsContent>
+
+            <TabsContent value="leaderboard">
+              <AnimatePresence mode="wait">
+                {activeTab === "leaderboard" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Leaderboard />
                   </motion.div>
                 )}
               </AnimatePresence>

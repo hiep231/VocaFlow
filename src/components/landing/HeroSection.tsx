@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 
 interface HeroSectionProps {
   onStartClick: () => void;
+  onDemoClick: () => void;
 }
 
 const itemVariants = {
@@ -15,7 +16,7 @@ const itemVariants = {
   },
 };
 
-export function HeroSection({ onStartClick }: HeroSectionProps) {
+export function HeroSection({ onStartClick, onDemoClick }: HeroSectionProps) {
   return (
     <motion.div
       initial="hidden"
@@ -71,6 +72,7 @@ export function HeroSection({ onStartClick }: HeroSectionProps) {
           size="lg"
           variant="outline"
           className="h-14 px-8 text-lg rounded-full border-slate-300 dark:border-slate-700 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-white transition-all hover:scale-105"
+          onClick={onDemoClick}
         >
           View Demo
         </Button>

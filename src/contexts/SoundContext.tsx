@@ -149,7 +149,7 @@ export function SoundProvider({ children }: { children: ReactNode }) {
     setSFXVolumeState(vol);
   };
 
-  const toggleMute = () => setIsMuted((prev) => !prev);
+  const toggleMute = () => setIsMuted((prev: boolean) => !prev);
 
   const playBGM = (trackId: string) => {
     if (currentTrackId === trackId && isPlaying) return;

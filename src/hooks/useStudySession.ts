@@ -71,40 +71,57 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
       if (!currentCard || !currentCard.id || isProcessing || !currentUser)
         return;
 
-      try {
-        setIsProcessing(true);
-        const { nextReview, newLevel } = calculateNextReview(
-          currentCard.level,
-          rating
-        );
+      // OPTIMISTIC UPDATE: Immediate UI transition
+      setIsProcessing(true);
+      setCurrentIndex((prev) => prev + 1);
 
-        const cardRef = doc(db, "cards", currentCard.id);
-        await updateDoc(cardRef, {
-          nextReview: Timestamp.fromDate(nextReview),
-          level: newLevel,
-        });
+      // Allow a small delay for animation before allowing next interaction
+      setTimeout(() => setIsProcessing(false), 300);
 
-        if (rating === "good" || rating === "hard") {
-          await updateUserStreak(currentUser.uid).catch((err) =>
-            console.error("Error updating streak:", err)
+      // Background Processing (Fire and Forget)
+      const processUpdates = async () => {
+        try {
+          const { nextReview, newLevel } = calculateNextReview(
+            currentCard.level,
+            rating
           );
 
-          const xpAmount = rating === "good" ? 10 : 5;
-          await addXP(currentUser.uid, xpAmount).catch((err) =>
-            console.error("Error adding XP:", err)
-          );
+          // 1. Critical: Update Card SRS
+          const cardRef = doc(db, "cards", currentCard.id!);
+          await updateDoc(cardRef, {
+            nextReview: Timestamp.fromDate(nextReview),
+            level: newLevel,
+          });
 
-          await logStudyActivity(currentUser.uid).catch((err) =>
-            console.error("Error logging activity logging:", err)
-          );
+          // 2. Secondary: Update Stats (Non-blocking)
+          if (rating === "good" || rating === "hard") {
+            const userProfile = {
+              displayName: currentUser.displayName || undefined,
+              photoURL: currentUser.photoURL || undefined,
+            };
+
+            // Run in parallel
+            Promise.all([
+              updateUserStreak(currentUser.uid, userProfile).catch((err) =>
+                console.error("Streak sync error:", err)
+              ),
+              addXP(
+                currentUser.uid,
+                rating === "good" ? 10 : 5,
+                userProfile
+              ).catch((err) => console.error("XP sync error:", err)),
+              logStudyActivity(currentUser.uid).catch((err) =>
+                console.error("Activity sync error:", err)
+              ),
+            ]);
+          }
+        } catch (error) {
+          console.error("Background update failed:", error);
+          // In a real app, we might want to queue this or show a toast
         }
+      };
 
-        setCurrentIndex((prev) => prev + 1);
-      } catch (error) {
-        console.error("Error updating card SRS:", error);
-      } finally {
-        setTimeout(() => setIsProcessing(false), 500);
-      }
+      processUpdates();
     },
     [currentCard, isProcessing, currentUser]
   );

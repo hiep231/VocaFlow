@@ -14,6 +14,7 @@ const StudySession = lazy(() => import("@/pages/StudySession"));
 const DeckDetail = lazy(() => import("@/pages/DeckDetail"));
 const AddCardsPage = lazy(() => import("@/pages/AddCardsPage"));
 const LibraryPage = lazy(() => import("@/pages/Library"));
+const DemoPage = lazy(() => import("@/pages/DemoPage"));
 
 // Simple loading component
 const PageLoader = () => (
@@ -30,6 +31,7 @@ export default function App() {
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<LandingPage />} />
+              <Route path="/demo" element={<DemoPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route
                 path="/dashboard"

@@ -40,4 +40,6 @@ export interface UserStats {
   level: number;
   streak: number;
   lastStudyDate: any; // Timestamp
+  displayName?: string;
+  photoURL?: string;
 }
