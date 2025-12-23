@@ -16,10 +16,13 @@ interface Word {
   text: string;
 }
 
+import { useSound } from "@/contexts/SoundContext";
+
 export function GrammarCard({ card, onSuccess }: GrammarCardProps) {
+  const { playSFX } = useSound();
+
   // Use example if available (better for grammar context), otherwise term
   const targetSentence = useMemo(() => {
-    // Prefer example, fallback to term. Clean up punctuation loosely if needed.
     const raw = card.example || card.term;
     return raw.trim();
   }, [card]);
@@ -36,8 +39,6 @@ export function GrammarCard({ card, onSuccess }: GrammarCardProps) {
   }, [targetSentence]);
 
   const resetGame = () => {
-    // Split sentence into words, keeping punctuation attached for simplicity or stripping it?
-    // User requirement: "shuffle words". Let's split by space.
     const words = targetSentence.split(/\s+/).map((text, i) => ({
       id: `word-${i}-${Math.random().toString(36).substr(2, 9)}`,
       text,
@@ -53,6 +54,7 @@ export function GrammarCard({ card, onSuccess }: GrammarCardProps) {
 
   const handleSelectWord = (word: Word) => {
     if (status === "correct") return;
+    playSFX("click");
     setAvailableWords((prev) => prev.filter((w) => w.id !== word.id));
     setSelectedWords((prev) => [...prev, word]);
     setStatus("idle"); // Clear error if any
@@ -60,6 +62,7 @@ export function GrammarCard({ card, onSuccess }: GrammarCardProps) {
 
   const handleDeselectWord = (word: Word) => {
     if (status === "correct") return;
+    playSFX("click");
     setSelectedWords((prev) => prev.filter((w) => w.id !== word.id));
     setAvailableWords((prev) => [...prev, word]);
     setStatus("idle");
@@ -74,6 +77,7 @@ export function GrammarCard({ card, onSuccess }: GrammarCardProps) {
 
     if (normalizedCurrent === normalizedTarget) {
       setStatus("correct");
+      playSFX("correct");
       confetti({
         particleCount: 100,
         spread: 70,
@@ -87,6 +91,7 @@ export function GrammarCard({ card, onSuccess }: GrammarCardProps) {
       // So don't auto-navigate immediately.
     } else {
       setStatus("incorrect");
+      playSFX("incorrect");
     }
   };
 
@@ -139,7 +144,7 @@ export function GrammarCard({ card, onSuccess }: GrammarCardProps) {
                   "rounded-xl shadow-sm text-sm h-9 px-4 font-medium transition-colors",
                   status === "correct"
                     ? "bg-green-600 hover:bg-green-600 text-white"
-                    : "bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:bg-red-100 dark:hover:bg-red-900/30 border border-slate-200 dark:border-slate-700"
+                    : "bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:bg-red-50 hover:border-red-300 hover:text-red-600 dark:hover:bg-red-500/20 dark:hover:border-red-500/50 dark:hover:text-red-300 border border-slate-200 dark:border-slate-700"
                 )}
               >
                 {word.text}
@@ -166,7 +171,7 @@ export function GrammarCard({ card, onSuccess }: GrammarCardProps) {
                   variant="outline"
                   size="sm"
                   onClick={() => handleSelectWord(word)}
-                  className="rounded-xl border-indigo-200 dark:border-indigo-800 bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:border-indigo-300 dark:hover:border-indigo-700 h-10 px-4 text-base shadow-sm"
+                  className="rounded-xl border-indigo-200 dark:border-indigo-800 bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 hover:border-indigo-400 hover:shadow-md hover:-translate-y-0.5 dark:hover:bg-indigo-500/30 dark:hover:border-indigo-400 dark:hover:text-white h-10 px-4 text-base shadow-sm transition-all duration-200"
                 >
                   {word.text}
                 </Button>

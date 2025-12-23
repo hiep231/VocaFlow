@@ -83,51 +83,69 @@ export function EditDeckDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="w-full max-w-[95vw] sm:max-w-[425px] rounded-2xl bg-white dark:bg-slate-950 dark:border-slate-800">
         <DialogHeader>
-          <DialogTitle>Edit Deck</DialogTitle>
+          <DialogTitle className="text-slate-900 dark:text-slate-100">
+            Edit Deck
+          </DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="title" className="text-right">
+        <div className="grid gap-6 py-4">
+          <div className="space-y-2">
+            <Label
+              htmlFor="title"
+              className="text-slate-700 dark:text-slate-300"
+            >
               Title
             </Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="col-span-3"
+              className="dark:bg-slate-900 dark:border-slate-700 dark:text-white"
+              placeholder="e.g., Essential Grammar"
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="description" className="text-right">
+          <div className="space-y-2">
+            <Label
+              htmlFor="description"
+              className="text-slate-700 dark:text-slate-300"
+            >
               Description
             </Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="col-span-3"
+              className="dark:bg-slate-900 dark:border-slate-700 dark:text-white min-h-[100px]"
+              placeholder="Briefly describe this deck..."
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="edit-public" className="text-right">
-              Public
-            </Label>
-            <div className="col-span-3 flex items-center space-x-2">
-              <Switch
-                id="edit-public"
-                checked={isPublic}
-                onCheckedChange={setIsPublic}
-              />
-              <span className="text-sm text-slate-500">
+          <div className="flex items-center justify-between rounded-xl border p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/50">
+            <div className="space-y-0.5">
+              <Label
+                htmlFor="edit-public"
+                className="text-base text-slate-800 dark:text-slate-200"
+              >
+                Public Deck
+              </Label>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Allow others to view and clone this deck
-              </span>
+              </p>
             </div>
+            <Switch
+              id="edit-public"
+              checked={isPublic}
+              onCheckedChange={setIsPublic}
+            />
           </div>
         </div>
         <DialogFooter>
-          <Button type="submit" onClick={handleSave} disabled={loading}>
+          <Button
+            type="submit"
+            onClick={handleSave}
+            disabled={loading}
+            className="w-full sm:w-auto"
+          >
             {loading ? "Saving..." : "Save Changes"}
           </Button>
         </DialogFooter>
