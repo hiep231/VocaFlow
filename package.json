@@ -5,10 +5,10 @@
   "author": "Hiep DT",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev": "rsbuild dev",
+    "build": "rsbuild build",
     "lint": "eslint .",
-    "preview": "vite preview",
+    "preview": "rsbuild preview",
     "deploy": "npm run build && firebase deploy --only hosting"
   },
   "dependencies": {
@@ -41,6 +41,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@rsbuild/core": "^1.6.15",
+    "@rsbuild/plugin-react": "^1.4.2",
     "@types/node": "^24.10.4",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
