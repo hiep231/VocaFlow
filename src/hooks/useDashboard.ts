@@ -8,6 +8,7 @@ import {
   Timestamp,
   writeBatch,
   doc,
+  orderBy,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { Deck, UserStats, Card } from "@/types";
@@ -38,7 +39,8 @@ export function useDashboard() {
       // 1. Fetch Decks
       const decksQ = query(
         collection(db, "decks"),
-        where("userId", "==", currentUser.uid)
+        where("userId", "==", currentUser.uid),
+        orderBy("createdAt", "desc")
       );
       const decksSnap = await getDocs(decksQ);
       const decksData: Deck[] = [];

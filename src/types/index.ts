@@ -33,6 +33,7 @@ export interface Deck {
   isPublic?: boolean;
   authorName?: string;
   downloads?: number;
+  createdAt?: any;
 }
 
 export interface UserStats {
