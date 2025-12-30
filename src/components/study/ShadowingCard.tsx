@@ -161,6 +161,7 @@ export function ShadowingCard({ card, onSuccess }: ShadowingCardProps) {
   };
 
   const playModelAudio = () => {
+    console.log("🚀 ~ playModelAudio ~ card:", card);
     if (card.audioUrl) {
       const audio = new Audio(card.audioUrl);
       setIsPlayingModel(true);

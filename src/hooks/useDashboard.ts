@@ -11,7 +11,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { Deck, UserStats, Card } from "@/types";
-import { getUserStats, getStudyActivity } from "@/services/user-stats";
+import { getStudyActivity, checkAndResetStreak } from "@/services/user-stats";
 
 interface DeckWithStats extends Deck {
   learnedCount: number;
@@ -88,7 +88,8 @@ export function useDashboard() {
       setAllCards(allCardsData as any[]); // Cast to Card[]
 
       // 3. User Stats & Activity (Parallel)
-      const statsPromise = getUserStats(currentUser.uid)
+      // Use checkAndResetStreak to ensure if user missed days, it shows 0 immediately
+      const statsPromise = checkAndResetStreak(currentUser.uid)
         .then((stats) => {
           if (stats) setUserStats(stats);
         })

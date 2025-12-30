@@ -75,6 +75,24 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
       setIsProcessing(true);
       setCurrentIndex((prev) => prev + 1);
 
+      // Re-queue card if rating is "fail"
+      if (rating === "fail") {
+        setStudyQueue((prevQueue) => {
+          const newQueue = [...prevQueue];
+          // We don't remove the card from its current position here because currentIndex increments.
+          // Instead, we just add a copy of it ahead.
+
+          // Insert 3 steps ahead, or at the end if queue is short
+          const insertionIndex = Math.min(
+            currentIndex + 1 + 3,
+            newQueue.length
+          );
+
+          newQueue.splice(insertionIndex, 0, currentCard);
+          return newQueue;
+        });
+      }
+
       // Allow a small delay for animation before allowing next interaction
       setTimeout(() => setIsProcessing(false), 300);
 

@@ -59,7 +59,7 @@ export default function StudySession() {
 
       <div className="w-full flex-1 flex flex-col items-center justify-center gap-8 relative z-10">
         <StudyContent
-          key={currentCard.id}
+          key={`${currentCard.id}-${currentIndex}`}
           currentCard={currentCard}
           mode={mode}
           practiceType={practiceType}

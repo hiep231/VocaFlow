@@ -78,6 +78,42 @@ export const updateUserStreak = async (
   });
 
   return newStreak;
+  return newStreak;
+};
+
+export const checkAndResetStreak = async (
+  userId: string
+): Promise<UserStats | null> => {
+  const statsRef = doc(db, "user_stats", userId);
+  const statsSnap = await getDoc(statsRef);
+  if (!statsSnap.exists()) return null;
+
+  const data = statsSnap.data() as UserStats;
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const lastDate =
+    data.lastStudyDate instanceof Timestamp
+      ? data.lastStudyDate.toDate()
+      : new Date(data.lastStudyDate);
+
+  const lastStudyDay = new Date(
+    lastDate.getFullYear(),
+    lastDate.getMonth(),
+    lastDate.getDate()
+  );
+
+  const diffTime = Math.abs(today.getTime() - lastStudyDay.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  // If more than 1 day has passed (diffDays > 1), streak is broken.
+  // Reset to 0 immediately so user sees 0.
+  if (diffDays > 1 && data.streak > 0) {
+    await updateDoc(statsRef, { streak: 0 });
+    return { ...data, streak: 0 };
+  }
+
+  return data;
 };
 
 export const getUserStats = async (
