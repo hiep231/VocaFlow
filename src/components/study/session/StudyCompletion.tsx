@@ -21,12 +21,7 @@ export function StudyCompletion({ deckId }: StudyCompletionProps) {
 
       <div className="flex flex-col sm:flex-row gap-4">
         {deckId && (
-          <Link
-            to={`/study/deck/${deckId}?cram=true`}
-            onClick={() =>
-              (window.location.href = `/study/deck/${deckId}?cram=true`)
-            }
-          >
+          <Link to={`/study/${deckId}?cram=true`}>
             <Button
               variant="outline"
               size="lg"

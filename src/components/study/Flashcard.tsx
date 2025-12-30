@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
-import { Volume2, RotateCw } from "lucide-react"; 
+import { Volume2, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useTextToSpeech } from "@/hooks/useTextToSpeech"; 
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import type { Card } from "@/types";
 
 interface FlashcardProps {
@@ -13,19 +13,19 @@ interface FlashcardProps {
 
 const Flashcard = ({ cardData, isFlipped, onFlip }: FlashcardProps) => {
   const { speak, isSpeaking } = useTextToSpeech({
-     text: cardData.term,
-     rate: 0.8
+    text: cardData.term,
+    rate: 0.8,
   });
-  
+
   const handleSpeakerClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
     speak();
   };
 
   return (
-    <div 
+    <div
       // Bỏ min-h cứng ở đây nếu muốn hoàn toàn tự động, hoặc giữ min-h nhỏ để card không quá bé
-      className="w-full max-w-xl mx-auto cursor-pointer group perspective-1000 relative" 
+      className="w-full max-w-xl mx-auto cursor-pointer group perspective-1000 relative"
       onClick={onFlip}
     >
       <motion.div
@@ -33,14 +33,19 @@ const Flashcard = ({ cardData, isFlipped, onFlip }: FlashcardProps) => {
         className="relative w-full grid grid-cols-1"
         initial={false}
         animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
+        transition={{
+          duration: 0.6,
+          type: "spring",
+          stiffness: 260,
+          damping: 20,
+        }}
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* ================================================== */}
         {/* MẶT TRƯỚC (FRONT) */}
         {/* ================================================== */}
         <div
-          // THAY ĐỔI 2: 
+          // THAY ĐỔI 2:
           // - Bỏ absolute inset-0
           // - Thêm col-start-1 row-start-1 (để chồng lên nhau)
           // - Bỏ overflow-y-auto (để div tự giãn cao)
@@ -49,19 +54,29 @@ const Flashcard = ({ cardData, isFlipped, onFlip }: FlashcardProps) => {
         >
           {/* Gradient Border */}
           <div className="absolute inset-0 rounded-2xl border-2 border-indigo-100 dark:border-indigo-500/30 pointer-events-none" />
-          
+
           <div className="absolute top-6 right-6 text-slate-500 dark:text-slate-400 text-xs font-medium flex items-center gap-1.5 opacity-60 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">
-             <RotateCw size={12} /> Flip
+            <RotateCw size={12} /> Flip
           </div>
 
-          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6 text-slate-900 dark:text-white drop-shadow-sm">
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-2 text-slate-900 dark:text-white drop-shadow-sm">
             {cardData.term}
           </h2>
+
+          {cardData.ipa && (
+            <span className="mb-6 px-3 py-1 text-sm font-mono text-slate-500 bg-slate-100 dark:bg-slate-800 dark:text-slate-400 rounded-full border border-slate-200 dark:border-slate-700 inline-block">
+              {cardData.ipa}
+            </span>
+          )}
 
           <Button
             variant="ghost"
             size="icon"
-            className={`rounded-full h-14 w-14 hover:scale-110 transition-transform duration-200 ${isSpeaking ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20" : "text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
+            className={`rounded-full h-14 w-14 hover:scale-110 transition-transform duration-200 ${
+              isSpeaking
+                ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20"
+                : "text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            }`}
             onClick={handleSpeakerClick}
           >
             <Volume2 className="h-7 w-7" />
@@ -76,47 +91,50 @@ const Flashcard = ({ cardData, isFlipped, onFlip }: FlashcardProps) => {
           // - Bỏ absolute inset-0, thêm col-start-1 row-start-1
           // - Bỏ overflow-y-auto
           className="col-start-1 row-start-1 w-full bg-slate-50 dark:bg-slate-900 rounded-2xl shadow-xl border-2 border-indigo-50 dark:border-indigo-900/30 flex flex-col items-center justify-center p-6 md:p-10 text-center"
-          style={{ 
+          style={{
             backfaceVisibility: "hidden",
-            transform: "rotateY(180deg)" 
+            transform: "rotateY(180deg)",
           }}
         >
           {cardData.ipa && (
             <span className="mb-6 px-3 py-1 text-sm font-mono text-slate-500 bg-slate-100 dark:bg-slate-800 dark:text-slate-400 rounded-full border border-slate-200 dark:border-slate-700 inline-block">
-               {cardData.ipa}
+              {cardData.ipa}
             </span>
           )}
 
           <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 leading-relaxed">
             {cardData.definition}
           </h3>
-          
+
           <Separator className="my-2 w-16 bg-slate-200 dark:bg-slate-700 mx-auto mb-6" />
-          
+
           <div className="text-left w-full space-y-4 text-sm">
             {cardData.collocation && (
-               <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-xl border-l-4 border-blue-500 shadow-sm relative overflow-hidden text-left w-full">
-                  <span className="font-bold text-blue-600 dark:text-blue-400 text-xs uppercase tracking-wider mb-2 block">Collocation</span>
-                  <span className="text-slate-700 dark:text-slate-200 font-medium italic block text-base leading-relaxed">
-                    {cardData.collocation}
-                  </span>
-               </div>
+              <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-xl border-l-4 border-blue-500 shadow-sm relative overflow-hidden text-left w-full">
+                <span className="font-bold text-blue-600 dark:text-blue-400 text-xs uppercase tracking-wider mb-2 block">
+                  Collocation
+                </span>
+                <span className="text-slate-700 dark:text-slate-200 font-medium italic block text-base leading-relaxed">
+                  {cardData.collocation}
+                </span>
+              </div>
             )}
 
             {cardData.example && (
               <div className="bg-white dark:bg-slate-800/50 p-4 rounded-xl border-l-4 border-slate-300 dark:border-slate-600 shadow-sm relative overflow-hidden text-left w-full">
-                  <span className="font-bold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider mb-2 block">Example</span>
-                  <p className="text-slate-700 dark:text-slate-200 text-base leading-relaxed italic">
-                    "{cardData.example}"
-                  </p>
+                <span className="font-bold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider mb-2 block">
+                  Example
+                </span>
+                <p className="text-slate-700 dark:text-slate-200 text-base leading-relaxed italic">
+                  "{cardData.example}"
+                </p>
               </div>
             )}
           </div>
         </div>
-
       </motion.div>
     </div>
   );
-}
+};
 
 export default Flashcard;

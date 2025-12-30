@@ -10,10 +10,12 @@ export default defineConfig({
     entry: {
       index: "./src/main.tsx",
     },
+    define: publicVars,
+  },
+  resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-    define: publicVars,
   },
   html: {
     template: "./index.html",
