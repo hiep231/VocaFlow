@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { deckService } from "@/services/deck-service";
 import type { Deck } from "@/types";
 import { LibraryDeckCard } from "@/components/library/LibraryDeckCard";
@@ -7,49 +7,33 @@ import { Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Library() {
-  const [decks, setDecks] = useState<Deck[]>([]);
-  const [filteredDecks, setFilteredDecks] = useState<Deck[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-
   const [selectedDeck, setSelectedDeck] = useState<Deck | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  useEffect(() => {
-    fetchPublicDecks();
-  }, []);
+  const {
+    data: decks = [],
+    isLoading: loading,
+    refetch,
+  } = useQuery({
+    queryKey: ["publicDecks"],
+    queryFn: deckService.getPublicDecks,
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
+  });
 
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredDecks(decks);
-    } else {
-      const q = searchQuery.toLowerCase();
-      setFilteredDecks(
-        decks.filter(
-          (d) =>
-            d.title.toLowerCase().includes(q) ||
-            d.description?.toLowerCase().includes(q) ||
-            d.authorName?.toLowerCase().includes(q)
-        )
-      );
-    }
-  }, [searchQuery, decks]);
-
-  const fetchPublicDecks = async () => {
-    try {
-      setLoading(true);
-      const data = await deckService.getPublicDecks();
-      console.log("🚀 ~ fetchPublicDecks ~ data:", data);
-      setDecks(data);
-      setFilteredDecks(data);
-    } catch (error) {
-      console.error("Failed to fetch public decks", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filteredDecks = useMemo(() => {
+    if (!searchQuery.trim()) return decks;
+    const q = searchQuery.toLowerCase();
+    return decks.filter(
+      (d) =>
+        d.title.toLowerCase().includes(q) ||
+        d.description?.toLowerCase().includes(q) ||
+        d.authorName?.toLowerCase().includes(q)
+    );
+  }, [decks, searchQuery]);
 
   const handleDeckClick = (deck: Deck) => {
     setSelectedDeck(deck);
@@ -115,7 +99,7 @@ export default function Library() {
           onCloneSuccess={() => {
             // Optional: refresh public decks if needed, or redirect user?
             // For now, staying on library is fine.
-            fetchPublicDecks(); // to update download counts potentially
+            refetch(); // to update download counts potentially
           }}
         />
       </div>

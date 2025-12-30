@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,10 +9,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, Download, User, BookOpen } from "lucide-react";
-import type { Deck, Card } from "@/types";
+import type { Deck } from "@/types";
 import { deckService } from "@/services/deck-service";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 
 interface DeckPreviewModalProps {
   deck: Deck | null;
@@ -27,31 +28,15 @@ export function DeckPreviewModal({
   onClose,
   onCloneSuccess,
 }: DeckPreviewModalProps) {
-  const [cards, setCards] = useState<Card[]>([]);
-  const [loading, setLoading] = useState(false);
   const [cloning, setCloning] = useState(false);
   const { currentUser } = useAuth();
 
-  useEffect(() => {
-    if (isOpen && deck?.id) {
-      loadPreviewCards(deck.id);
-    } else {
-      setCards([]);
-    }
-  }, [isOpen, deck]);
-
-  const loadPreviewCards = async (deckId: string) => {
-    try {
-      setLoading(true);
-      const previewCards = await deckService.getPreviewCards(deckId);
-      setCards(previewCards);
-    } catch (error) {
-      console.error("Failed to load preview cards", error);
-      toast.error("Failed to load preview");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: cards = [], isLoading: loading } = useQuery({
+    queryKey: ["previewCards", deck?.id],
+    queryFn: () => deckService.getPreviewCards(deck?.id!),
+    enabled: isOpen && !!deck?.id,
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
+  });
 
   const handleClone = async () => {
     if (!deck?.id || !currentUser) return;

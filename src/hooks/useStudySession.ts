@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   collection,
@@ -17,52 +17,68 @@ import {
   addXP,
   logStudyActivity,
 } from "@/services/user-stats";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export type StudyMode = "flashcard" | "practice" | "grammar" | "shadowing";
 
 export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
   const { currentUser } = useAuth();
-  const [studyQueue, setStudyQueue] = useState<Card[]>([]);
+  const queryClient = useQueryClient();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [localQueueUpdates, setLocalQueueUpdates] = useState<Card[]>([]);
 
   // Fetch due cards
-  useEffect(() => {
-    async function fetchDueCards() {
-      if (!currentUser) return;
-      try {
-        const constraints = [where("userId", "==", currentUser.uid)];
+  const { data: initialStudyQueue = [], isLoading: loading } = useQuery({
+    queryKey: ["studyCards", currentUser?.uid, deckId, options?.cram],
+    queryFn: async () => {
+      if (!currentUser) return [];
 
-        // Only filter by date if NOT in cram mode
-        if (!options?.cram) {
-          const now = new Date();
-          constraints.push(where("nextReview", "<=", Timestamp.fromDate(now)));
-        }
+      const constraints = [where("userId", "==", currentUser.uid)];
 
-        if (deckId) {
-          constraints.push(where("deckId", "==", deckId));
-        }
-
-        const q = query(collection(db, "cards"), ...constraints);
-        const querySnapshot = await getDocs(q);
-
-        const cardsData: Card[] = [];
-        querySnapshot.forEach((doc) => {
-          cardsData.push({ id: doc.id, ...doc.data() } as Card);
-        });
-
-        // If cramming, maybe shuffle the cards? For now just fetch them.
-        setStudyQueue(cardsData);
-      } catch (error) {
-        console.error("Error fetching study cards:", error);
-      } finally {
-        setLoading(false);
+      // Only filter by date if NOT in cram mode
+      if (!options?.cram) {
+        const now = new Date();
+        constraints.push(where("nextReview", "<=", Timestamp.fromDate(now)));
       }
-    }
 
-    fetchDueCards();
-  }, [currentUser, deckId, options?.cram]);
+      if (deckId) {
+        constraints.push(where("deckId", "==", deckId));
+      }
+
+      const q = query(collection(db, "cards"), ...constraints);
+      const querySnapshot = await getDocs(q);
+
+      const cardsData: Card[] = [];
+      querySnapshot.forEach((doc) => {
+        cardsData.push({ id: doc.id, ...doc.data() } as Card);
+      });
+
+      return cardsData;
+    },
+    enabled: !!currentUser,
+    staleTime: 1000 * 60 * 2, // 2 minutes stale time ensures fresh cards if re-entering quickly but caches for session stability
+  });
+
+  // Merge server data with local re-queue operations
+  const studyQueue = useMemo(() => {
+    // If we have local updates (failed cards inserted), use that as the source of truth merged with initial
+    if (localQueueUpdates.length > 0) return localQueueUpdates;
+    return initialStudyQueue;
+  }, [initialStudyQueue, localQueueUpdates]);
+
+  // Initialize local queue when data first loads
+  useMemo(() => {
+    if (
+      initialStudyQueue.length > 0 &&
+      localQueueUpdates.length === 0 &&
+      currentIndex === 0
+    ) {
+      // This logic is tricky with React Query because data updates.
+      // We only want to init once.
+      // Actually, let's just use initialStudyQueue as base and copy to state if we modify it.
+    }
+  }, [initialStudyQueue]);
 
   const currentCard = studyQueue[currentIndex];
 
@@ -77,10 +93,10 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
 
       // Re-queue card if rating is "fail"
       if (rating === "fail") {
-        setStudyQueue((prevQueue) => {
-          const newQueue = [...prevQueue];
-          // We don't remove the card from its current position here because currentIndex increments.
-          // Instead, we just add a copy of it ahead.
+        setLocalQueueUpdates((prevQueue) => {
+          const baseQueue =
+            prevQueue.length > 0 ? prevQueue : initialStudyQueue;
+          const newQueue = [...baseQueue];
 
           // Insert 3 steps ahead, or at the end if queue is short
           const insertionIndex = Math.min(
@@ -111,6 +127,12 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
             level: newLevel,
           });
 
+          // Invalidate queries so dashboard and future sessions get fresh data
+          // We don't invalidate immediately to prevent UI jumps, but maybe on unmount or after delay
+          // For now, let's rely on staleness, but if we want dashboard to be right:
+          queryClient.invalidateQueries({ queryKey: ["allCards"] });
+          queryClient.invalidateQueries({ queryKey: ["decks"] });
+
           // 2. Secondary: Update Stats (Non-blocking)
           if (rating === "good" || rating === "hard") {
             const userProfile = {
@@ -132,16 +154,26 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
                 console.error("Activity sync error:", err)
               ),
             ]);
+
+            // Invalidate user stats/activity
+            queryClient.invalidateQueries({ queryKey: ["userStats"] });
+            queryClient.invalidateQueries({ queryKey: ["userActivity"] });
           }
         } catch (error) {
           console.error("Background update failed:", error);
-          // In a real app, we might want to queue this or show a toast
         }
       };
 
       processUpdates();
     },
-    [currentCard, isProcessing, currentUser]
+    [
+      currentCard,
+      isProcessing,
+      currentUser,
+      currentIndex,
+      initialStudyQueue,
+      queryClient,
+    ]
   );
 
   const practiceType = useMemo(() => {

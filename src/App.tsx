@@ -5,6 +5,8 @@ import { SoundProvider } from "@/contexts/SoundContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { Toaster } from "sonner";
 import { AudioPlayer } from "@/components/audio/AudioPlayer";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/lib/query-client";
 
 // Lazy load pages for code splitting
 const LandingPage = lazy(() => import("@/pages/LandingPage"));
@@ -26,67 +28,69 @@ const PageLoader = () => (
 export default function App() {
   return (
     <SoundProvider>
-      <AuthProvider>
-        <BrowserRouter>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/demo" element={<DemoPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/study"
-                element={
-                  <ProtectedRoute>
-                    <StudySession />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/study/:deckId"
-                element={
-                  <ProtectedRoute>
-                    <StudySession />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/decks/:deckId"
-                element={
-                  <ProtectedRoute>
-                    <DeckDetail />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/decks/:deckId/add"
-                element={
-                  <ProtectedRoute>
-                    <AddCardsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/library"
-                element={
-                  <ProtectedRoute>
-                    <LibraryPage />
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-            <AudioPlayer />
-          </Suspense>
-        </BrowserRouter>
-        <Toaster position="top-right" richColors />
-      </AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <BrowserRouter>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/demo" element={<DemoPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/study"
+                  element={
+                    <ProtectedRoute>
+                      <StudySession />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/study/:deckId"
+                  element={
+                    <ProtectedRoute>
+                      <StudySession />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/decks/:deckId"
+                  element={
+                    <ProtectedRoute>
+                      <DeckDetail />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/decks/:deckId/add"
+                  element={
+                    <ProtectedRoute>
+                      <AddCardsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/library"
+                  element={
+                    <ProtectedRoute>
+                      <LibraryPage />
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+              <AudioPlayer />
+            </Suspense>
+          </BrowserRouter>
+          <Toaster position="top-right" richColors />
+        </AuthProvider>
+      </QueryClientProvider>
     </SoundProvider>
   );
 }

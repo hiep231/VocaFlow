@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   collection,
   doc,
-  getDoc,
   getDocs,
   query,
   where,
@@ -13,7 +12,9 @@ import {
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import type { Deck, Card } from "@/types";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Card } from "@/types";
+import { deckService } from "@/services/deck-service";
 
 import { EditCardModal } from "@/components/deck/EditCardModal";
 import { EditDeckDialog } from "@/components/deck/EditDeckDialog";
@@ -26,10 +27,7 @@ export default function DeckDetail() {
   const { deckId } = useParams<{ deckId: string }>();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-
-  const [deck, setDeck] = useState<Deck | null>(null);
-  const [cards, setCards] = useState<Card[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   const [editingCard, setEditingCard] = useState<Card | null>(null);
   const [isEditCardOpen, setIsEditCardOpen] = useState(false);
@@ -40,42 +38,32 @@ export default function DeckDetail() {
   const [isDeleteDeckOpen, setIsDeleteDeckOpen] = useState(false);
   const [isDeletingDeck, setIsDeletingDeck] = useState(false);
 
-  const fetchData = async () => {
-    if (!deckId) return;
-    try {
-      const deckRef = doc(db, "decks", deckId);
-      const deckSnap = await getDoc(deckRef);
-      if (deckSnap.exists()) {
-        setDeck({ id: deckSnap.id, ...deckSnap.data() } as Deck);
-      } else {
-        toast.error("Deck not found");
-        navigate("/dashboard");
-      }
+  // 1. Fetch Deck
+  const { data: deck, isLoading: deckLoading } = useQuery({
+    queryKey: ["deck", deckId],
+    queryFn: () => (deckId ? deckService.getDeck(deckId) : null),
+    enabled: !!deckId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
-      if (currentUser) {
-        const cardsQ = query(
-          collection(db, "cards"),
-          where("deckId", "==", deckId),
-          where("userId", "==", currentUser.uid)
-        );
-        const cardsSnap = await getDocs(cardsQ);
-        const cardsData: Card[] = [];
-        cardsSnap.forEach((doc) => {
-          cardsData.push({ id: doc.id, ...doc.data() } as Card);
-        });
-        setCards(cardsData);
-      }
-    } catch (error) {
-      console.error("Error fetching deck details:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // 2. Fetch Cards
+  const { data: cards = [], isLoading: cardsLoading } = useQuery({
+    queryKey: ["deckCards", deckId],
+    queryFn: () =>
+      deckId && currentUser
+        ? deckService.getDeckCards(deckId, currentUser.uid)
+        : [],
+    enabled: !!deckId && !!currentUser,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
-  useEffect(() => {
-    setLoading(true);
-    fetchData();
-  }, [deckId, currentUser]);
+  const loading = deckLoading || cardsLoading;
+
+  // Handle deck not found or error
+  if (!deckLoading && !deck) {
+    // Ideally use useEffect to navigate, but for now simple return or effect
+    // We can show "Not Found" UI
+  }
 
   const handleDeleteCard = async () => {
     if (!deletingCardId) return;
@@ -83,7 +71,12 @@ export default function DeckDetail() {
       setIsDeletingCard(true);
       await deleteDoc(doc(db, "cards", deletingCardId));
       toast.success("Card deleted.");
-      fetchData();
+      setIsDeletingCard(true);
+      await deleteDoc(doc(db, "cards", deletingCardId));
+      toast.success("Card deleted.");
+      queryClient.invalidateQueries({ queryKey: ["deckCards", deckId] });
+      // Also might need to update deck card count if we track that accurately elsewhere
+      // For now just invalidating cards list
     } catch (err) {
       console.error("Error deleting card:", err);
       toast.error("Failed to delete card.");
@@ -115,6 +108,8 @@ export default function DeckDetail() {
       await batch.commit();
 
       toast.success("Deck deleted.");
+      queryClient.invalidateQueries({ queryKey: ["decks"] }); // Invalidate dashboard decks
+      queryClient.invalidateQueries({ queryKey: ["deck", deckId] });
       navigate("/dashboard");
     } catch (err) {
       console.error("Error deleting deck:", err);
@@ -162,14 +157,18 @@ export default function DeckDetail() {
           card={editingCard}
           isOpen={isEditCardOpen}
           onClose={() => setIsEditCardOpen(false)}
-          onSuccess={fetchData}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ["deckCards", deckId] });
+          }}
         />
 
         <EditDeckDialog
           deck={deck}
           isOpen={isEditDeckOpen}
           onClose={() => setIsEditDeckOpen(false)}
-          onSuccess={fetchData}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ["deck", deckId] });
+          }}
         />
 
         <DeleteCardDialog

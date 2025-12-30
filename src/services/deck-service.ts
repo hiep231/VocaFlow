@@ -125,6 +125,43 @@ export const deckService = {
     }
   },
 
+  // Get a single deck
+  async getDeck(deckId: string): Promise<Deck | null> {
+    try {
+      const deckRef = doc(db, "decks", deckId);
+      const deckSnap = await getDoc(deckRef);
+      if (deckSnap.exists()) {
+        return { id: deckSnap.id, ...deckSnap.data() } as Deck;
+      }
+      return null;
+    } catch (error) {
+      console.error("Error fetching deck:", error);
+      throw error;
+    }
+  },
+
+  // Get all cards for a deck (for owner)
+  async getDeckCards(deckId: string, userId: string): Promise<Card[]> {
+    try {
+      const q = query(
+        collection(db, "cards"),
+        where("deckId", "==", deckId),
+        where("userId", "==", userId)
+      );
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...doc.data(),
+          } as Card)
+      );
+    } catch (error) {
+      console.error("Error fetching deck cards:", error);
+      throw error;
+    }
+  },
+
   // Get preview cards for a deck
   async getPreviewCards(deckId: string, limitCount = 10): Promise<Card[]> {
     try {
