@@ -9,7 +9,8 @@
     "build": "rsbuild build",
     "lint": "eslint .",
     "preview": "rsbuild preview",
-    "deploy": "npm run build && firebase deploy --only hosting"
+    "deploy": "npm run build && firebase deploy --only hosting",
+    "deploy:fast": "firebase deploy --only hosting"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",

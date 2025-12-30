@@ -12,6 +12,12 @@ export default defineConfig({
     },
     define: publicVars,
   },
+  output: {
+    sourceMap: {
+      js: false,
+      css: false,
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
