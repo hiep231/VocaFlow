@@ -34,6 +34,7 @@ export interface Deck {
   authorName?: string;
   downloads?: number;
   createdAt?: any;
+  cardsSnapshot?: Card[]; // Snapshot of cards for preview/cloning
 }
 
 export interface UserStats {

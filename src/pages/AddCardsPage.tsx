@@ -96,7 +96,11 @@ export default function AddCardsPage() {
               ) : (
                 <>
                   <Save className="w-4 h-4 mr-2" />
-                  Save Cards
+                  Save{" "}
+                  {activeTab === "smart"
+                    ? parsedCards.length
+                    : manualCards.length}{" "}
+                  Cards
                 </>
               )}
             </Button>

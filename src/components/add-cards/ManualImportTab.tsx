@@ -20,6 +20,11 @@ export function ManualImportTab({
 }: ManualImportTabProps) {
   return (
     <div className="space-y-4">
+      <div className="flex items-center gap-2 pb-2">
+        <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm animate-in zoom-in">
+          {manualCards.length} Cards
+        </span>
+      </div>
       <AnimatePresence>
         {manualCards.map((card, index) => (
           <motion.div

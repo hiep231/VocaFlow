@@ -35,6 +35,40 @@ export const deckService = {
     }
   },
 
+  // Create a snapshot of cards in the deck document for fast preview/cloning
+  async syncDeckSnapshot(deckId: string) {
+    try {
+      // Fetch all cards
+      const q = query(collection(db, "cards"), where("deckId", "==", deckId));
+      const snapshot = await getDocs(q);
+      const cards = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        // Return only data, we don't need IDs as they will be generated on clone
+        // We can strip SRS fields to save space
+        const {
+          userId,
+          deckId,
+          nextReview,
+          reps,
+          interval,
+          easeFactor,
+          createdAt,
+          ...rest
+        } = data;
+        return rest as Card;
+      });
+
+      const deckRef = doc(db, "decks", deckId);
+      await updateDoc(deckRef, {
+        cardsSnapshot: cards,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error syncing deck snapshot:", error);
+      throw error;
+    }
+  },
+
   // Clone a deck
   async cloneDeck(
     originalDeckId: string,
@@ -59,45 +93,49 @@ export const deckService = {
         cardCount: originalDeckData.cardCount,
         isPublic: false, // Default to private
         createdAt: serverTimestamp(),
-        // Don't copy downloads or authorName as this is a new copy owned by the current user
-        authorName: originalDeckData.authorName, // Potentially keep original author credit in description or separate field if needed, but per request implies ownership transfer or copy
-        // Actually the request says "The cloning user becomes the owner of the new copy only".
-        // We probably don't want to carry over 'downloads' count to the new deck.
+        authorName: originalDeckData.authorName,
       });
 
-      // 3. Fetch ALL Cards from the original Deck
-      const cardsQuery = query(
-        collection(db, "cards"),
-        where("deckId", "==", originalDeckId)
-      );
-      const cardsSnap = await getDocs(cardsQuery);
+      let cardsToClone: Card[] = [];
+
+      // 3. CHECK SNAPSHOT FIRST
+      if (
+        originalDeckData.cardsSnapshot &&
+        originalDeckData.cardsSnapshot.length > 0
+      ) {
+        cardsToClone = originalDeckData.cardsSnapshot;
+      } else {
+        // Fallback: Fetch from collection
+        const cardsQuery = query(
+          collection(db, "cards"),
+          where("deckId", "==", originalDeckId)
+        );
+        const cardsSnap = await getDocs(cardsQuery);
+        cardsToClone = cardsSnap.docs.map((doc) => doc.data() as Card);
+      }
 
       // 4. Batch Write to copy cards
-      // FireStore batch limit is 500 operations. We need to handle chunks if > 500 cards.
       const BATCH_SIZE = 500;
       let batch = writeBatch(db);
       let operationCount = 0;
 
-      for (const cardDoc of cardsSnap.docs) {
-        const cardData = cardDoc.data() as Card;
-
+      for (const cardData of cardsToClone) {
         const newCardRef = doc(collection(db, "cards"));
 
         // 5. RESET SRS stats
+        const { id, ...restData } = cardData; // Remove ID if present
+
         const newCardData = {
-          ...cardData,
+          ...restData,
           userId: currentUserId,
           deckId: newDeckRef.id,
           // Reset SRS fields
           reps: 0,
           interval: 0,
-          easeFactor: 2.5, // Standard default or whatever system uses
-          nextReview: serverTimestamp(), // Available immediately
+          easeFactor: 2.5,
+          nextReview: serverTimestamp(),
           createdAt: serverTimestamp(),
         };
-
-        // Remove ID to let Firestore generate one (already done by doc(collection...))
-        delete (newCardData as any).id;
 
         batch.set(newCardRef, newCardData);
         operationCount++;
@@ -163,7 +201,7 @@ export const deckService = {
   },
 
   // Get preview cards for a deck
-  async getPreviewCards(deckId: string, limitCount = 10): Promise<Card[]> {
+  async getPreviewCards(deckId: string, limitCount = 20): Promise<Card[]> {
     try {
       const q = query(
         collection(db, "cards"),

@@ -33,7 +33,16 @@ export function DeckPreviewModal({
 
   const { data: cards = [], isLoading: loading } = useQuery({
     queryKey: ["previewCards", deck?.id],
-    queryFn: () => deckService.getPreviewCards(deck?.id!),
+    queryFn: async () => {
+      if (deck?.id) {
+        // If snapshot exists, use it for instant preview
+        if (deck.cardsSnapshot && deck.cardsSnapshot.length > 0) {
+          return deck.cardsSnapshot;
+        }
+        return deckService.getPreviewCards(deck.id);
+      }
+      return [];
+    },
     enabled: isOpen && !!deck?.id,
     staleTime: 1000 * 60 * 5, // 5 minutes cache
   });

@@ -47,58 +47,70 @@ export function SmartImportTab({
       <div className="flex justify-end">{/* Auto-previewing */}</div>
 
       {parsedCards.length > 0 && (
-        <div className="border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
-          <Table>
-            <TableHeader className="bg-slate-50 dark:bg-slate-900">
-              <TableRow>
-                <TableHead className="w-[100px]">Type</TableHead>
-                <TableHead>Term</TableHead>
-                <TableHead>Definition</TableHead>
-                <TableHead>IPA</TableHead>
-                <TableHead>Collocation</TableHead>
-                <TableHead>Example</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {parsedCards.map((card, index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <Select
-                      value={card.type || "vocab"}
-                      onValueChange={(value) =>
-                        onUpdateType(index, value as any)
-                      }
-                    >
-                      <SelectTrigger className="h-8 w-28 text-xs font-bold border-2 border-neo-black shadow-neo-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="vocab">Vocab</SelectItem>
-                        <SelectItem value="grammar">Grammar</SelectItem>
-                        <SelectItem value="sentence">Sentence</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell className="font-bold text-indigo-600 dark:text-indigo-400">
-                    {card.term}
-                  </TableCell>
-                  <TableCell className="dark:text-slate-300">
-                    {card.definition}
-                  </TableCell>
-                  <TableCell className="font-mono text-xs dark:text-slate-500">
-                    {card.ipa}
-                  </TableCell>
-                  <TableCell className="dark:text-slate-400">
-                    {card.collocation}
-                  </TableCell>
-                  <TableCell className="italic dark:text-slate-400">
-                    {card.example}
-                  </TableCell>
+        <>
+          <div className="flex items-center justify-between pb-2">
+            <div className="flex items-center gap-2">
+              <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm animate-in zoom-in">
+                {parsedCards.length} Cards
+              </span>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">
+                Review your cards below
+              </p>
+            </div>
+          </div>
+          <div className="border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
+            <Table>
+              <TableHeader className="bg-slate-50 dark:bg-slate-900">
+                <TableRow>
+                  <TableHead className="w-[100px]">Type</TableHead>
+                  <TableHead>Term</TableHead>
+                  <TableHead>Definition</TableHead>
+                  <TableHead>IPA</TableHead>
+                  <TableHead>Collocation</TableHead>
+                  <TableHead>Example</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {parsedCards.map((card, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <Select
+                        value={card.type || "vocab"}
+                        onValueChange={(value) =>
+                          onUpdateType(index, value as any)
+                        }
+                      >
+                        <SelectTrigger className="h-8 w-28 text-xs font-bold border-2 border-neo-black shadow-neo-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="vocab">Vocab</SelectItem>
+                          <SelectItem value="grammar">Grammar</SelectItem>
+                          <SelectItem value="sentence">Sentence</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell className="font-bold text-indigo-600 dark:text-indigo-400">
+                      {card.term}
+                    </TableCell>
+                    <TableCell className="dark:text-slate-300">
+                      {card.definition}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs dark:text-slate-500">
+                      {card.ipa}
+                    </TableCell>
+                    <TableCell className="dark:text-slate-400">
+                      {card.collocation}
+                    </TableCell>
+                    <TableCell className="italic dark:text-slate-400">
+                      {card.example}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </>
       )}
     </div>
   );

@@ -13,10 +13,12 @@ import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function useAddCards(deckId?: string) {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("smart");
 
   const [text, setText] = useState("");
@@ -132,6 +134,13 @@ export function useAddCards(deckId?: string) {
       });
 
       toast.success(`Successfully added ${cardsToSave.length} cards!`);
+
+      // Invalidate queries to refresh data
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["deck", deckId] }),
+        queryClient.invalidateQueries({ queryKey: ["deckCards", deckId] }),
+      ]);
+
       navigate(`/decks/${deckId}`);
     } catch (error) {
       console.error("Error saving cards:", error);

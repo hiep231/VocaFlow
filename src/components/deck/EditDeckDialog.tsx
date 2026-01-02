@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { deckService } from "@/services/deck-service";
 import type { Deck } from "@/types";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -69,6 +70,12 @@ export function EditDeckDialog({
       }
 
       await updateDoc(deckRef, updates);
+
+      // Sync snapshot if deck is public
+      console.log("🚀 ~ handleSave ~ isPublic:", isPublic);
+      if (isPublic) {
+        await deckService.syncDeckSnapshot(deck.id);
+      }
 
       toast.success("Deck updated successfully!");
       if (onSuccess) onSuccess();
