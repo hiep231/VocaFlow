@@ -71,9 +71,6 @@ export default function DeckDetail() {
       setIsDeletingCard(true);
       await deleteDoc(doc(db, "cards", deletingCardId));
       toast.success("Card deleted.");
-      setIsDeletingCard(true);
-      await deleteDoc(doc(db, "cards", deletingCardId));
-      toast.success("Card deleted.");
       queryClient.invalidateQueries({ queryKey: ["deckCards", deckId] });
       // Also might need to update deck card count if we track that accurately elsewhere
       // For now just invalidating cards list
@@ -113,7 +110,6 @@ export default function DeckDetail() {
       navigate("/dashboard");
     } catch (err) {
       console.error("Error deleting deck:", err);
-      toast.error("Failed to delete deck.");
       toast.error("Failed to delete deck.");
       setIsDeletingDeck(false);
     }
