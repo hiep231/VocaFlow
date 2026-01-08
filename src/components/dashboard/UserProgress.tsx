@@ -299,9 +299,18 @@ function RankBadge({ level }: { level: number }) {
 }
 
 export function UserProgress({ xp, level, streak }: UserProgressProps) {
-  const { percent, next } = getLevelProgress(xp);
-  const title =
-    LEVEL_TITLES[Math.min(level - 1, LEVEL_TITLES.length - 1)] || "Novice";
+  const { percent, next, current } = getLevelProgress(xp);
+  // Determine title based on level ranges matching the new progressive curve
+  let titleIndex = 0;
+  if (level >= 50) titleIndex = 7; // Legend
+  else if (level >= 40) titleIndex = 6; // Grandmaster
+  else if (level >= 30) titleIndex = 5; // Master
+  else if (level >= 20) titleIndex = 4; // Expert
+  else if (level >= 15) titleIndex = 3; // Scholar
+  else if (level >= 10) titleIndex = 2; // Apprentice
+  else if (level >= 5) titleIndex = 1; // Rookie
+
+  const title = LEVEL_TITLES[titleIndex];
 
   return (
     <div className="w-full bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-visible">
@@ -376,9 +385,7 @@ export function UserProgress({ xp, level, streak }: UserProgressProps) {
                 {Math.round(xp).toLocaleString()}
               </span>
               <span className="mx-1">/</span>
-              <span>
-                {Math.round(xp + (next - (xp % next))).toLocaleString()} XP
-              </span>
+              {Math.round(xp - current + next).toLocaleString()} XP
             </div>
           </div>
         </div>

@@ -12,6 +12,7 @@ import { useState } from "react";
 
 import { VocabularyList } from "@/components/dashboard/VocabularyList";
 import { Leaderboard } from "@/components/dashboard/Leaderboard";
+import { calculateLevel } from "@/lib/gamification";
 
 export default function Dashboard() {
   const {
@@ -42,7 +43,7 @@ export default function Dashboard() {
           <div className="mb-6">
             <UserProgress
               xp={userStats?.xp || 0}
-              level={userStats?.level || 1}
+              level={calculateLevel(userStats?.xp || 0)}
               streak={userStats?.streak || 0}
             />
           </div>
