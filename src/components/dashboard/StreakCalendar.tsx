@@ -22,7 +22,12 @@ import {
   subDays,
 } from "date-fns";
 import { motion } from "framer-motion";
-import { Calendar as CalendarIcon, Flame } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  Flame,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface ActivityStats {
@@ -55,6 +60,7 @@ export function StreakCalendar({ activityLog }: StreakCalendarProps) {
   const isDesktop = useMediaQuery("(min-width: 640px)");
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [showFullMonth, setShowFullMonth] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   // Helper to check if a day has activity
   const hasActivity = (date: Date) => {
@@ -99,16 +105,52 @@ export function StreakCalendar({ activityLog }: StreakCalendarProps) {
   const currentStreak = calculateStreak();
 
   // --- Shared Grid Logic ---
-  const monthStart = startOfMonth(today);
-  const monthEnd = endOfMonth(today);
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
   const calendarDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
   // Pad the start of the month to align with grid
   const startDayOfWeek = getDay(monthStart); // 0 = Sunday
   const paddingDays = Array.from({ length: startDayOfWeek });
 
+  const nextMonth = () => {
+    setCurrentMonth(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1),
+    );
+  };
+
+  const prevMonth = () => {
+    setCurrentMonth(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1),
+    );
+  };
+
   const CalendarGrid = () => (
     <>
+      <div className="flex items-center justify-between mb-4">
+        <button
+          onClick={prevMonth}
+          className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+          aria-label="Previous Month"
+        >
+          <ChevronLeft className="w-5 h-5 text-slate-500" />
+        </button>
+        <div className="font-bold text-slate-700 dark:text-slate-200">
+          {format(currentMonth, "MMMM yyyy")}
+        </div>
+        <button
+          onClick={nextMonth}
+          className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+          disabled={
+            currentMonth.getMonth() === today.getMonth() &&
+            currentMonth.getFullYear() === today.getFullYear()
+          }
+          aria-label="Next Month"
+        >
+          <ChevronRight className="w-5 h-5 text-slate-500" />
+        </button>
+      </div>
+
       <div className="grid grid-cols-7 gap-3 mb-2">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
           <div
@@ -139,10 +181,10 @@ export function StreakCalendar({ activityLog }: StreakCalendarProps) {
                       "aspect-square rounded-xl flex items-center justify-center text-sm font-medium transition-all cursor-default border-2 relative overflow-hidden group",
                       active
                         ? "border-orange-500 bg-gradient-to-br from-yellow-400 to-orange-500 text-white shadow-md shadow-orange-500/20"
-                        : "border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-slate-400 dark:text-slate-600",
+                        : "border-slate-300 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/50 text-slate-600 dark:text-slate-600",
                       isCurrentDay &&
                         !active &&
-                        "border-indigo-500 border-dashed text-indigo-500"
+                        "border-indigo-500 border-dashed text-indigo-500 bg-indigo-50/50",
                     )}
                   >
                     {active && (
@@ -226,7 +268,7 @@ export function StreakCalendar({ activityLog }: StreakCalendarProps) {
                         : "border-slate-200 dark:border-slate-800 bg-transparent",
                       isCurrentDay &&
                         !active &&
-                        "border-indigo-500 border-dashed"
+                        "border-indigo-500 border-dashed",
                     )}
                   >
                     {active ? (
@@ -245,12 +287,6 @@ export function StreakCalendar({ activityLog }: StreakCalendarProps) {
           {/* Full Month Dialog for Mobile */}
           <Dialog open={showFullMonth} onOpenChange={setShowFullMonth}>
             <DialogContent className="w-[95%] rounded-2xl">
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <CalendarIcon className="w-5 h-5 text-indigo-500" />
-                  {format(today, "MMMM yyyy")}
-                </DialogTitle>
-              </DialogHeader>
               <div className="mt-4">
                 <CalendarGrid />
               </div>
@@ -312,8 +348,7 @@ export function StreakCalendar({ activityLog }: StreakCalendarProps) {
         <Card className="border-none shadow-none bg-transparent">
           <CardHeader className="px-0 pt-0">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg text-white font-bold flex items-center gap-2">
-                <CalendarIcon className="w-5 h-5" />
+              <CardTitle className="text-lg text-slate-900 dark:text-white font-bold flex items-center gap-2">
                 Monthly Progress
               </CardTitle>
               <div className="text-sm font-medium text-orange-500 flex items-center gap-1">

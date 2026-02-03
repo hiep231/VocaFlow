@@ -38,6 +38,41 @@ Built by **Hiep DT**.
 - **Smart Import**: Quickly add dozens of words via text paste.
 - **Dashboard**: Track your mastery of different decks.
 
+## 📸 Screenshots
+
+### ☀️ Light Mode
+
+#### Landing Page
+
+![Landing Page](./screenshots/light/landing_page.png)
+
+#### Interactive Demo
+
+![Demo Page](./screenshots/light/demo_page.png)
+
+#### Dashboard
+
+![Dashboard](./screenshots/light/dashboard.png)
+
+#### Activity Log
+
+![Activity Log](./screenshots/light/activity_log.png)
+
+#### Leaderboard
+
+![Leaderboard](./screenshots/light/leaderboard.png)
+
+#### Add New Cards
+
+![Add Cards](./screenshots/light/add_cards.png)
+
+### 🌙 Dark Mode
+
+#### Dashboard (Dark)
+
+![Dashboard Dark](./screenshots/dark/dashboard_dark.png)
+_The interface automatically adapts to your system theme._
+
 ## 🚀 Getting Started
 
 ### Prerequisites
