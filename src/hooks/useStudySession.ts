@@ -18,6 +18,7 @@ import {
   logStudyActivity,
 } from "@/services/user-stats";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { shuffleArray } from "@/lib/utils";
 
 export type StudyMode = "flashcard" | "practice" | "grammar" | "shadowing";
 
@@ -54,10 +55,12 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
         cardsData.push({ id: doc.id, ...doc.data() } as Card);
       });
 
-      return cardsData;
+      return shuffleArray(cardsData);
     },
     enabled: !!currentUser,
-    staleTime: 1000 * 60 * 2, // 2 minutes stale time ensures fresh cards if re-entering quickly but caches for session stability
+    staleTime: 0, // Always consider stale to force fresh shuffle on new session remount
+    refetchOnWindowFocus: false, // Prevent reshuffling during active session
+    refetchOnMount: "always", // Ensure fresh cards every time study page is entered
   });
 
   // Merge server data with local re-queue operations
@@ -101,7 +104,7 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
           // Insert 3 steps ahead, or at the end if queue is short
           const insertionIndex = Math.min(
             currentIndex + 1 + 3,
-            newQueue.length
+            newQueue.length,
           );
 
           newQueue.splice(insertionIndex, 0, currentCard);
@@ -117,7 +120,7 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
         try {
           const { nextReview, newLevel } = calculateNextReview(
             currentCard.level,
-            rating
+            rating,
           );
 
           // 1. Critical: Update Card SRS
@@ -143,15 +146,15 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
             // Run in parallel
             Promise.all([
               updateUserStreak(currentUser.uid, userProfile).catch((err) =>
-                console.error("Streak sync error:", err)
+                console.error("Streak sync error:", err),
               ),
               addXP(
                 currentUser.uid,
                 rating === "good" ? 10 : 5,
-                userProfile
+                userProfile,
               ).catch((err) => console.error("XP sync error:", err)),
               logStudyActivity(currentUser.uid).catch((err) =>
-                console.error("Activity sync error:", err)
+                console.error("Activity sync error:", err),
               ),
             ]);
 
@@ -173,7 +176,7 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
       currentIndex,
       initialStudyQueue,
       queryClient,
-    ]
+    ],
   );
 
   const practiceType = useMemo(() => {
