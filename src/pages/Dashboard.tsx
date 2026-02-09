@@ -55,7 +55,7 @@ export default function Dashboard() {
             className="w-full"
           >
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-              <div className="w-full overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
+              <div className="w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
                 <TabsList className="bg-slate-100 dark:bg-slate-800/50 p-1 relative w-max sm:w-auto flex whitespace-nowrap">
                   {["decks", "activity", "vocab", "leaderboard"].map((tab) => (
                     <TabsTrigger
