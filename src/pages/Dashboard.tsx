@@ -55,36 +55,38 @@ export default function Dashboard() {
             className="w-full"
           >
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-              <TabsList className="bg-slate-100 dark:bg-slate-800 p-1 relative w-full sm:w-auto">
-                {["decks", "activity", "vocab", "leaderboard"].map((tab) => (
-                  <TabsTrigger
-                    key={tab}
-                    value={tab}
-                    className="relative z-10 text-slate-600 dark:text-slate-400 data-[state=active]:text-slate-900 dark:data-[state=active]:text-white transition-colors flex-1 sm:flex-none"
-                  >
-                    {activeTab === tab && (
-                      <motion.div
-                        layoutId="active-tab"
-                        className="absolute inset-0 bg-white dark:bg-slate-700/50 rounded-sm shadow-sm"
-                        transition={{
-                          type: "spring",
-                          bounce: 0.2,
-                          duration: 0.6,
-                        }}
-                      />
-                    )}
-                    <span className="relative z-20">
-                      {tab === "decks"
-                        ? "My Decks"
-                        : tab === "activity"
-                        ? "Activity Log"
-                        : tab === "vocab"
-                        ? "Vocabulary"
-                        : "Leaderboard"}
-                    </span>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+              <div className="w-full overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
+                <TabsList className="bg-slate-100 dark:bg-slate-800/50 p-1 relative w-max sm:w-auto flex whitespace-nowrap">
+                  {["decks", "activity", "vocab", "leaderboard"].map((tab) => (
+                    <TabsTrigger
+                      key={tab}
+                      value={tab}
+                      className="relative z-10 text-slate-600 dark:text-slate-400 data-[state=active]:text-slate-900 dark:data-[state=active]:text-white transition-colors px-4 py-2"
+                    >
+                      {activeTab === tab && (
+                        <motion.div
+                          layoutId="active-tab"
+                          className="absolute inset-0 bg-white dark:bg-slate-700/50 rounded-sm shadow-sm"
+                          transition={{
+                            type: "spring",
+                            bounce: 0.2,
+                            duration: 0.6,
+                          }}
+                        />
+                      )}
+                      <span className="relative z-20">
+                        {tab === "decks"
+                          ? "My Decks"
+                          : tab === "activity"
+                            ? "Activity Log"
+                            : tab === "vocab"
+                              ? "Vocabulary"
+                              : "Leaderboard"}
+                      </span>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </div>
 
               {/* Only show Create button when on Decks tab */}
               {activeTab === "decks" && (
