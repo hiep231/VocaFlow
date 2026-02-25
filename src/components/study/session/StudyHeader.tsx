@@ -19,7 +19,7 @@ export function StudyHeader({
         <Button
           variant="ghost"
           size="sm"
-          className="text-slate-200 hover:bg-white/10 hover:text-white transition-colors"
+          className="text-slate-900 dark:text-slate-200 hover:bg-white/10 hover:text-white transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           {deckId ? "Back to Deck" : "Dashboard"}

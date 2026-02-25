@@ -139,23 +139,29 @@ export function DeckPreviewModal({
           <Button variant="outline" onClick={onClose} disabled={cloning}>
             Cancel
           </Button>
-          <Button
-            className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
-            onClick={handleClone}
-            disabled={cloning}
-          >
-            {cloning ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Cloning...
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4" />
-                Clone to My Collection
-              </>
-            )}
-          </Button>
+          {deck.userId === currentUser?.uid ? (
+            <Button variant="outline" disabled className="bg-gray-400 text-gray-700 cursor-not-allowed">
+              Your Deck (cannot clone)
+            </Button>
+          ) : (
+            <Button
+              className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
+              onClick={handleClone}
+              disabled={cloning}
+            >
+              {cloning ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Cloning...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  Clone to My Collection
+                </>
+              )}
+            </Button>
+          )
         </DialogFooter>
       </DialogContent>
     </Dialog>

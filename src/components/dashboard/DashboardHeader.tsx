@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { LogOut, Menu, X, Home, BookOpen } from "lucide-react";
@@ -21,6 +21,10 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ onLogout }: DashboardHeaderProps) {
   const { currentUser } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  const isActive = (path: string) => 
+    location.pathname === path || location.pathname.startsWith(`${path}/`);
 
   return (
     <>
@@ -52,13 +56,21 @@ export function DashboardHeader({ onLogout }: DashboardHeaderProps) {
           <nav className="hidden md:flex items-center gap-6">
             <Link
               to="/dashboard"
-              className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+              className={`text-sm font-medium transition-colors ${
+                isActive("/dashboard")
+                  ? "text-indigo-600 dark:text-indigo-400 underline underline-offset-[16px] decoration-2 decoration-indigo-600 dark:decoration-indigo-400"
+                  : "text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
+              }`}
             >
               My Decks
             </Link>
             <Link
               to="/library"
-              className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+              className={`text-sm font-medium transition-colors ${
+                isActive("/library")
+                  ? "text-indigo-600 dark:text-indigo-400 underline underline-offset-[16px] decoration-2 decoration-indigo-600 dark:decoration-indigo-400"
+                  : "text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
+              }`}
             >
               Public Library
             </Link>
@@ -161,7 +173,11 @@ export function DashboardHeader({ onLogout }: DashboardHeaderProps) {
                 <Link
                   to="/dashboard"
                   onClick={() => setIsSidebarOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all font-medium"
+                  className={`flex items-center gap-3 p-3 rounded-xl transition-all font-medium ${
+                    isActive("/dashboard")
+                      ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-indigo-600 dark:hover:text-indigo-400"
+                  }`}
                 >
                   <Home className="w-5 h-5" />
                   My Decks
@@ -169,7 +185,11 @@ export function DashboardHeader({ onLogout }: DashboardHeaderProps) {
                 <Link
                   to="/library"
                   onClick={() => setIsSidebarOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all font-medium"
+                  className={`flex items-center gap-3 p-3 rounded-xl transition-all font-medium ${
+                    isActive("/library")
+                      ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-indigo-600 dark:hover:text-indigo-400"
+                  }`}
                 >
                   <BookOpen className="w-5 h-5" />
                   Public Library
