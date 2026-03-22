@@ -17,6 +17,13 @@ export default defineConfig({
       js: false,
       css: false,
     },
+    externals: {
+      'firebase-admin': 'commonjs firebase-admin',
+      'telegraf': 'commonjs telegraf',
+    },
+  },
+  performance: {
+    buildCache: false,
   },
   resolve: {
     alias: {
