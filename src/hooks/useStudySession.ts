@@ -51,8 +51,19 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
       const querySnapshot = await getDocs(q);
 
       const cardsData: Card[] = [];
+      const nowMs = Date.now();
+      
       querySnapshot.forEach((doc) => {
-        cardsData.push({ id: doc.id, ...doc.data() } as Card);
+        const docData = doc.data();
+        // Client-side filtering for drip-feeding:
+        // Exclude cards that have a future unlockAt timestamp.
+        if (docData.unlockAt && typeof docData.unlockAt.toMillis === 'function') {
+          if (docData.unlockAt.toMillis() > nowMs) {
+            return; // Skip this card
+          }
+        }
+        
+        cardsData.push({ id: doc.id, ...docData } as Card);
       });
 
       return shuffleArray(cardsData);

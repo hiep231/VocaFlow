@@ -20,6 +20,7 @@ export interface Card {
   userId: string;
   deckId: string;
   nextReview?: any; // Timestamp or Date
+  unlockAt?: any; // Timestamp for drip-feeding
   level: number;
   createdAt?: any;
 }

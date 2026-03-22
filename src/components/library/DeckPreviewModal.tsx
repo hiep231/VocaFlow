@@ -161,7 +161,7 @@ export function DeckPreviewModal({
                 </>
               )}
             </Button>
-          )
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

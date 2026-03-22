@@ -12,6 +12,7 @@ import { useState } from "react";
 
 import { VocabularyList } from "@/components/dashboard/VocabularyList";
 import { Leaderboard } from "@/components/dashboard/Leaderboard";
+import { ScheduleTab } from "@/components/dashboard/ScheduleTab";
 import { calculateLevel } from "@/lib/gamification";
 
 export default function Dashboard() {
@@ -57,7 +58,7 @@ export default function Dashboard() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
               <div className="w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
                 <TabsList className="bg-slate-100 dark:bg-slate-800/50 p-1 relative w-max sm:w-auto flex whitespace-nowrap">
-                  {["decks", "activity", "vocab", "leaderboard"].map((tab) => (
+                  {["decks", "activity", "vocab", "schedule", "leaderboard"].map((tab) => (
                     <TabsTrigger
                       key={tab}
                       value={tab}
@@ -81,7 +82,9 @@ export default function Dashboard() {
                             ? "Activity Log"
                             : tab === "vocab"
                               ? "Vocabulary"
-                              : "Leaderboard"}
+                              : tab === "schedule"
+                                ? "Schedule"
+                                : "Leaderboard"}
                       </span>
                     </TabsTrigger>
                   ))}
@@ -141,6 +144,21 @@ export default function Dashboard() {
                     transition={{ duration: 0.2 }}
                   >
                     <VocabularyList cards={allCards || []} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </TabsContent>
+
+            <TabsContent value="schedule">
+              <AnimatePresence mode="wait">
+                {activeTab === "schedule" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <ScheduleTab decks={decks} />
                   </motion.div>
                 )}
               </AnimatePresence>
