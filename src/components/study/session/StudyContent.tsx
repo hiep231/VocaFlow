@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useSound } from "@/contexts/SoundContext";
 import { RatingControls } from "./RatingControls";
 import { HelpDialog } from "./HelpDialog";
+import { useFlashcardShortcuts } from "@/hooks/useFlashcardShortcuts";
 
 interface StudyContentProps {
   currentCard: Card;
@@ -37,25 +38,33 @@ export function StudyContent({
     onRate(rating);
   };
 
+  const { activeKey } = useFlashcardShortcuts({
+    onFlip: handleFlip,
+    onRate: handleRate,
+    isFlipped,
+    isEnabled: mode === "flashcard",
+  });
+
   if (mode === "flashcard") {
     return (
-      <div className="w-full flex-1 flex flex-col items-center justify-center gap-8">
+      <div className="w-full flex-1 flex flex-col items-center justify-center gap-8 overflow-hidden px-4">
         <Flashcard
           cardData={currentCard}
           isFlipped={isFlipped}
           onFlip={handleFlip}
+          onRate={handleRate}
         />
 
         {!isFlipped ? (
           <Button size="lg" className="min-w-[200px]" onClick={handleFlip}>
-            Show Answer
+            Show Answer <span className="text-xs opacity-60 ml-2">[Space]</span>
           </Button>
         ) : (
           <div className="w-full max-w-xl flex flex-col items-center animate-in fade-in slide-in-from-bottom-4">
             <p className="text-slate-500 dark:text-slate-400 mb-4 font-medium">
               How well did you recall this?
             </p>
-            <RatingControls onRate={handleRate} />
+            <RatingControls onRate={handleRate} activeKey={activeKey} />
           </div>
         )}
 

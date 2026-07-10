@@ -13,7 +13,7 @@ import type { Deck } from "@/types";
 import { deckService } from "@/services/deck-service";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface DeckPreviewModalProps {
   deck: Deck | null;
@@ -47,6 +47,8 @@ export function DeckPreviewModal({
     staleTime: 1000 * 60 * 5, // 5 minutes cache
   });
 
+  const queryClient = useQueryClient();
+
   const handleClone = async () => {
     if (!deck?.id || !currentUser) return;
 
@@ -54,6 +56,11 @@ export function DeckPreviewModal({
       setCloning(true);
       await deckService.cloneDeck(deck.id, currentUser.uid);
       toast.success("Deck cloned to your collection!");
+      
+      // Invalidate dashboard queries so the new deck shows up immediately
+      queryClient.invalidateQueries({ queryKey: ["decks", currentUser.uid] });
+      queryClient.invalidateQueries({ queryKey: ["allCards", currentUser.uid] });
+      
       onCloneSuccess();
       onClose();
     } catch (error) {

@@ -1,17 +1,19 @@
-import { motion } from "framer-motion";
-import { Volume2, RotateCw } from "lucide-react";
+import { motion, useAnimation, useMotionValue, useTransform, PanInfo } from "framer-motion";
+import { Volume2, RotateCw, Check, X, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import type { Card } from "@/types";
+import type { ReviewRating } from "@/lib/srs-algorithm";
 
 interface FlashcardProps {
   cardData: Card;
   isFlipped: boolean;
   onFlip: () => void;
+  onRate?: (rating: ReviewRating) => void;
 }
 
-const Flashcard = ({ cardData, isFlipped, onFlip }: FlashcardProps) => {
+const Flashcard = ({ cardData, isFlipped, onFlip, onRate }: FlashcardProps) => {
   const { speak, isSpeaking } = useTextToSpeech({
     text: cardData.term,
     rate: 0.8,
@@ -22,11 +24,50 @@ const Flashcard = ({ cardData, isFlipped, onFlip }: FlashcardProps) => {
     speak();
   };
 
+  const controls = useAnimation();
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  // Background overlays based on drag position
+  const rotate = useTransform(x, [-200, 200], [-10, 10]);
+  const opacityRight = useTransform(x, [0, 100], [0, 1]);
+  const opacityLeft = useTransform(x, [0, -100], [0, 1]);
+  const opacityTop = useTransform(y, [0, -100], [0, 1]);
+
+  const handleDragEnd = async (e: any, info: PanInfo) => {
+    const offset = info.offset;
+    const swipeThreshold = 100;
+
+    if (offset.x > swipeThreshold) {
+      // Swiped right (Good)
+      await controls.start({ x: 500, opacity: 0, transition: { duration: 0.3 } });
+      if (onRate) onRate("good");
+      controls.set({ x: 0, y: 0, opacity: 1 });
+    } else if (offset.x < -swipeThreshold) {
+      // Swiped left (Fail)
+      await controls.start({ x: -500, opacity: 0, transition: { duration: 0.3 } });
+      if (onRate) onRate("fail");
+      controls.set({ x: 0, y: 0, opacity: 1 });
+    } else if (offset.y < -swipeThreshold) {
+      // Swiped up (Hard)
+      await controls.start({ y: -500, opacity: 0, transition: { duration: 0.3 } });
+      if (onRate) onRate("hard");
+      controls.set({ x: 0, y: 0, opacity: 1 });
+    } else {
+      // Spring back
+      controls.start({ x: 0, y: 0, transition: { type: "spring", stiffness: 300, damping: 20 } });
+    }
+  };
+
   return (
-    <div
-      // Bỏ min-h cứng ở đây nếu muốn hoàn toàn tự động, hoặc giữ min-h nhỏ để card không quá bé
-      className="w-full max-w-xl mx-auto cursor-pointer group perspective-1000 relative"
+    <motion.div
+      className="w-full max-w-xl mx-auto cursor-grab active:cursor-grabbing group perspective-1000 relative"
       onClick={onFlip}
+      drag={isFlipped ? true : false}
+      onDragEnd={handleDragEnd}
+      animate={controls}
+      style={{ x, y, rotate }}
+      whileTap={{ scale: 0.98 }}
     >
       <motion.div
         // THAY ĐỔI 1: Chuyển sang Grid để các con xếp chồng lên nhau
@@ -41,6 +82,33 @@ const Flashcard = ({ cardData, isFlipped, onFlip }: FlashcardProps) => {
         }}
         style={{ transformStyle: "preserve-3d" }}
       >
+        {/* Visual Overlays */}
+        <motion.div
+          className="absolute inset-0 z-50 flex items-center justify-center bg-green-500/20 rounded-2xl pointer-events-none"
+          style={{ opacity: opacityRight }}
+        >
+          <div className="bg-green-500 text-white p-4 rounded-full shadow-lg border-4 border-white">
+            <Check size={48} />
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="absolute inset-0 z-50 flex items-center justify-center bg-red-500/20 rounded-2xl pointer-events-none"
+          style={{ opacity: opacityLeft }}
+        >
+          <div className="bg-red-500 text-white p-4 rounded-full shadow-lg border-4 border-white">
+            <X size={48} />
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="absolute inset-0 z-50 flex items-center justify-center bg-orange-500/20 rounded-2xl pointer-events-none"
+          style={{ opacity: opacityTop }}
+        >
+          <div className="bg-orange-500 text-white p-4 rounded-full shadow-lg border-4 border-white">
+            <Flame size={48} />
+          </div>
+        </motion.div>
         {/* ================================================== */}
         {/* MẶT TRƯỚC (FRONT) */}
         {/* ================================================== */}
@@ -133,7 +201,7 @@ const Flashcard = ({ cardData, isFlipped, onFlip }: FlashcardProps) => {
           </div>
         </div>
       </motion.div>
-    </div>
+    </motion.div>
   );
 };
 

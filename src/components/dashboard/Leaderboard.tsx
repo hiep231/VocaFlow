@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getLeaderboard } from "@/services/user-stats";
 import { useAuth } from "@/contexts/AuthContext";
 import type { UserStats } from "@/types";
-import { Trophy, Medal, Crown } from "lucide-react";
+import { Trophy, Medal, Crown, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LeaderboardUser extends UserStats {
@@ -111,9 +111,15 @@ export function Leaderboard() {
                   >
                     {user.displayName || "Anonymous"} {isCurrentUser && "(You)"}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Lvl {user.level}
-                  </p>
+                  <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                    <span>Lvl {user.level}</span>
+                    {user.streak > 0 && (
+                      <span className="flex items-center gap-1 font-medium text-orange-500 dark:text-orange-400">
+                        <Flame className="w-3.5 h-3.5 fill-current" />
+                        {user.streak} day{user.streak !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="text-right">

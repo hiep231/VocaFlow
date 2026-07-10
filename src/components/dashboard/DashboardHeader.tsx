@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, Menu, X, Home, BookOpen } from "lucide-react";
+import { LogOut, Menu, X, Home, BookOpen, Settings as SettingsIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import {
   DropdownMenu,
@@ -12,7 +12,19 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 interface DashboardHeaderProps {
   onLogout: () => void;
@@ -22,6 +34,41 @@ export function DashboardHeader({ onLogout }: DashboardHeaderProps) {
   const { currentUser } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
+
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [newCardsLimit, setNewCardsLimit] = useState(20);
+  const [reviewCardsLimit, setReviewCardsLimit] = useState(100);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (isSettingsOpen && currentUser) {
+      const fetchSettings = async () => {
+        const statsSnap = await getDoc(doc(db, "user_stats", currentUser.uid));
+        if (statsSnap.exists()) {
+          const data = statsSnap.data();
+          setNewCardsLimit(data.maxNewCardsPerDay ?? 20);
+          setReviewCardsLimit(data.maxReviewCardsPerDay ?? 100);
+        }
+      };
+      fetchSettings();
+    }
+  }, [isSettingsOpen, currentUser]);
+
+  const handleSaveSettings = async () => {
+    if (!currentUser) return;
+    setIsSaving(true);
+    try {
+      await updateDoc(doc(db, "user_stats", currentUser.uid), {
+        maxNewCardsPerDay: newCardsLimit,
+        maxReviewCardsPerDay: reviewCardsLimit,
+      });
+      setIsSettingsOpen(false);
+    } catch (e) {
+      console.error("Error saving settings", e);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const isActive = (path: string) => 
     location.pathname === path || location.pathname.startsWith(`${path}/`);
@@ -114,6 +161,13 @@ export function DashboardHeader({ onLogout }: DashboardHeaderProps) {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => setIsSettingsOpen(true)}
+                      className="cursor-pointer"
+                    >
+                      <SettingsIcon className="mr-2 h-4 w-4 text-slate-500" />
+                      <span>Settings</span>
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={onLogout}
                       className="text-red-600 dark:text-red-400 cursor-pointer"
@@ -238,6 +292,56 @@ export function DashboardHeader({ onLogout }: DashboardHeaderProps) {
           </>
         )}
       </AnimatePresence>
+
+      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Study Settings</DialogTitle>
+            <DialogDescription>
+              Adjust your daily limits to prevent SRS fatigue.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="newCards" className="text-right col-span-3">
+                Max New Cards / Day
+              </Label>
+              <Input
+                id="newCards"
+                type="number"
+                value={newCardsLimit}
+                onChange={(e) => setNewCardsLimit(Number(e.target.value))}
+                className="col-span-1"
+                min={0}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="reviewCards" className="text-right col-span-3">
+                Max Review Cards / Day
+              </Label>
+              <Input
+                id="reviewCards"
+                type="number"
+                value={reviewCardsLimit}
+                onChange={(e) => setReviewCardsLimit(Number(e.target.value))}
+                className="col-span-1"
+                min={0}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsSettingsOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSaveSettings} disabled={isSaving}>
+              {isSaving ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

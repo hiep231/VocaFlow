@@ -37,7 +37,7 @@ export function HelpDialog() {
         <Button
           variant="ghost"
           size="sm"
-          className="text-slate-300 hover:text-white hover:bg-white/10 gap-2"
+          className="text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white gap-2"
         >
           <HelpCircle className="w-4 h-4" />
           Hướng dẫn đánh giá

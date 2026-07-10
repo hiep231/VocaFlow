@@ -23,7 +23,7 @@ export function parseVocabText(text: string): Partial<Card>[] {
       continue;
     }
 
-    const [term, definition, ipa, collocation, example] = parts;
+    const [term, definition, ipa, collocation, example, clozeHint] = parts;
 
     // Auto-detection logic
     let type: "vocab" | "grammar" | "sentence" = "vocab";
@@ -42,6 +42,7 @@ export function parseVocabText(text: string): Partial<Card>[] {
       ipa: ipa || undefined,
       collocation: collocation || undefined,
       example: example || undefined,
+      clozeHint: clozeHint || undefined,
     });
   }
 

@@ -106,11 +106,28 @@ export const checkAndResetStreak = async (
   const diffTime = Math.abs(today.getTime() - lastStudyDay.getTime());
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-  // If more than 1 day has passed (diffDays > 1), streak is broken.
-  // Reset to 0 immediately so user sees 0.
+  // If more than 1 day has passed (diffDays > 1), check for streak freeze.
   if (diffDays > 1 && data.streak > 0) {
-    await updateDoc(statsRef, { streak: 0 });
-    return { ...data, streak: 0 };
+    if (diffDays === 2 && data.activeFreezes && data.activeFreezes > 0) {
+      // Consume 1 freeze
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      await updateDoc(statsRef, {
+        activeFreezes: data.activeFreezes - 1,
+        lastStudyDate: Timestamp.fromDate(yesterday)
+      });
+      
+      return { 
+        ...data, 
+        activeFreezes: data.activeFreezes - 1,
+        lastStudyDate: Timestamp.fromDate(yesterday)
+      };
+    } else {
+      // Streak broken. Reset to 0.
+      await updateDoc(statsRef, { streak: 0 });
+      return { ...data, streak: 0 };
+    }
   }
 
   return data;
@@ -182,7 +199,7 @@ export const getLeaderboard = async (limitCount = 10) => {
   }
 };
 
-export const logStudyActivity = async (userId: string) => {
+export const logStudyActivity = async (userId: string, isNew: boolean = false) => {
   const today = new Date();
   const dateStr = today.toISOString().split("T")[0];
 
@@ -193,6 +210,8 @@ export const logStudyActivity = async (userId: string) => {
       activityRef,
       {
         count: increment(1),
+        newCards: increment(isNew ? 1 : 0),
+        reviewCards: increment(isNew ? 0 : 1),
         date: Timestamp.fromDate(today),
       },
       { merge: true }
@@ -204,7 +223,7 @@ export const logStudyActivity = async (userId: string) => {
 
 export const getStudyActivity = async (
   userId: string
-): Promise<Record<string, { xp: number; duration: number; count: number }>> => {
+): Promise<Record<string, { xp: number; duration: number; count: number; newCards: number; reviewCards: number }>> => {
   try {
     const activityRef = collection(db, "user_stats", userId, "activity");
     const q = query(activityRef, orderBy("date", "desc"), limit(365));
@@ -212,7 +231,7 @@ export const getStudyActivity = async (
     const querySnapshot = await getDocs(q);
     const activityMap: Record<
       string,
-      { xp: number; duration: number; count: number }
+      { xp: number; duration: number; count: number; newCards: number; reviewCards: number }
     > = {};
 
     querySnapshot.forEach((doc) => {
@@ -220,6 +239,8 @@ export const getStudyActivity = async (
       // Doc ID is dateStr (YYYY-MM-DD)
       activityMap[doc.id] = {
         count: data.count || 0,
+        newCards: data.newCards || 0,
+        reviewCards: data.reviewCards || 0,
         xp: data.xp || data.count * 10 || 0, // Fallback for demo
         duration: data.duration || data.count * 5 || 0, // Fallback for demo
       };

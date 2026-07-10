@@ -177,11 +177,12 @@ export function StreakCalendar({ activityLog }: StreakCalendarProps) {
               <Tooltip delayDuration={200}>
                 <TooltipTrigger asChild>
                   <div
+                    onClick={() => active && setSelectedDay(day)}
                     className={cn(
-                      "aspect-square rounded-xl flex items-center justify-center text-sm font-medium transition-all cursor-default border-2 relative overflow-hidden group",
+                      "aspect-square rounded-xl flex items-center justify-center text-sm font-medium transition-all border-2 relative overflow-hidden group",
                       active
-                        ? "border-orange-500 bg-gradient-to-br from-yellow-400 to-orange-500 text-white shadow-md shadow-orange-500/20"
-                        : "border-slate-200 bg-white shadow-sm dark:border-slate-200 dark:bg-slate-500/50 text-slate-400 dark:text-slate-500",
+                        ? "border-orange-500 bg-gradient-to-br from-yellow-400 to-orange-500 text-white shadow-md shadow-orange-500/20 cursor-pointer hover:scale-[1.02] active:scale-95"
+                        : "border-slate-200 bg-white shadow-sm dark:border-slate-200 dark:bg-slate-500/50 text-slate-400 dark:text-slate-500 cursor-default",
                       isCurrentDay &&
                         !active &&
                         "border-indigo-500 border-dashed text-indigo-500 bg-indigo-50/50 dark:bg-indigo-500/10",
@@ -228,8 +229,8 @@ export function StreakCalendar({ activityLog }: StreakCalendarProps) {
     <div className="w-full">
       {/* Mobile Weekly Strip */}
       {!isDesktop && (
-        <div className="flex flex-col gap-6">
-          <div className="flex justify-between items-center px-2">
+        <div className="flex flex-col gap-6 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="flex justify-between items-center">
             <div>
               <h3 className="text-xl font-bold dark:text-white flex items-center gap-2">
                 <Flame className="w-6 h-6 text-orange-500 fill-orange-500" />
@@ -247,7 +248,7 @@ export function StreakCalendar({ activityLog }: StreakCalendarProps) {
             </button>
           </div>
 
-          <div className="flex justify-between items-center gap-2 px-1">
+          <div className="flex justify-between items-center gap-2">
             {last7Days.map((day, index) => {
               const active = hasActivity(day);
               const isCurrentDay = isToday(day);
@@ -286,7 +287,7 @@ export function StreakCalendar({ activityLog }: StreakCalendarProps) {
 
           {/* Full Month Dialog for Mobile */}
           <Dialog open={showFullMonth} onOpenChange={setShowFullMonth}>
-            <DialogContent className="w-[95%] rounded-2xl">
+            <DialogContent className="w-[95%] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl">
               <div className="mt-4">
                 <CalendarGrid />
               </div>
@@ -297,9 +298,9 @@ export function StreakCalendar({ activityLog }: StreakCalendarProps) {
             open={!!selectedDay}
             onOpenChange={(open) => !open && setSelectedDay(null)}
           >
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="w-[90vw] sm:max-w-md bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl">
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
+                <DialogTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
                   <CalendarIcon className="w-5 h-5 text-indigo-500" />
                   {selectedDay && format(selectedDay, "EEEE, MMMM do")}
                 </DialogTitle>

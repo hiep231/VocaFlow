@@ -151,10 +151,14 @@ export const deckService = {
         await batch.commit();
       }
 
-      // 6. Increment downloads on original deck
-      await updateDoc(deckRef, {
-        downloads: increment(1),
-      });
+      // 6. Increment downloads on original deck (Safe wrap)
+      try {
+        await updateDoc(deckRef, {
+          downloads: increment(1),
+        });
+      } catch (err) {
+        console.warn("Could not increment download count. Ensure rules are updated.", err);
+      }
 
       return newDeckRef.id;
     } catch (error) {

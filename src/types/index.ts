@@ -13,6 +13,9 @@ export interface Card {
   structure?: string; // e.g., 'S + V + O'
   grammarNotes?: string;
 
+  // Study fields
+  clozeHint?: string; // Explicit hint for fill-in-the-blank
+
   // Shadowing fields
   audioUrl?: string;
   breakdown?: string[]; // Array of chunks for breakdown practice
@@ -22,6 +25,9 @@ export interface Card {
   nextReview?: any; // Timestamp or Date
   unlockAt?: any; // Timestamp for drip-feeding
   level: number;
+  interval?: number; // SM-2
+  repetitions?: number; // SM-2
+  easeFactor?: number; // SM-2
   createdAt?: any;
 }
 
@@ -45,4 +51,7 @@ export interface UserStats {
   lastStudyDate: any; // Timestamp
   displayName?: string;
   photoURL?: string;
+  maxNewCardsPerDay?: number;
+  maxReviewCardsPerDay?: number;
+  activeFreezes?: number;
 }

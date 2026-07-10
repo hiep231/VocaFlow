@@ -11,11 +11,13 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { Card } from "@/types";
-import { calculateNextReview, type ReviewRating } from "@/lib/srs-algorithm";
+import { calculateSM2, type ReviewRating } from "@/lib/srs-algorithm";
 import {
   updateUserStreak,
   addXP,
   logStudyActivity,
+  getUserStats,
+  getStudyActivity,
 } from "@/services/user-stats";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { shuffleArray } from "@/lib/utils";
@@ -35,6 +37,19 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
     queryFn: async () => {
       if (!currentUser) return [];
 
+      // 1. Fetch Limits and Today's Activity
+      const stats = await getUserStats(currentUser.uid);
+      const activityMap = await getStudyActivity(currentUser.uid);
+      const todayStr = new Date().toISOString().split("T")[0];
+      const todayActivity = activityMap[todayStr] || { newCards: 0, reviewCards: 0 };
+
+      // Ignore limits if cramming
+      const maxNewCards = options?.cram ? Infinity : (stats?.maxNewCardsPerDay ?? 20);
+      const maxReviewCards = options?.cram ? Infinity : (stats?.maxReviewCardsPerDay ?? 100);
+
+      const remainingNew = Math.max(0, maxNewCards - (todayActivity.newCards || 0));
+      const remainingReview = Math.max(0, maxReviewCards - (todayActivity.reviewCards || 0));
+
       const constraints = [where("userId", "==", currentUser.uid)];
 
       // Only filter by date if NOT in cram mode
@@ -50,7 +65,8 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
       const q = query(collection(db, "cards"), ...constraints);
       const querySnapshot = await getDocs(q);
 
-      const cardsData: Card[] = [];
+      const newBucket: Card[] = [];
+      const reviewBucket: Card[] = [];
       const nowMs = Date.now();
       
       querySnapshot.forEach((doc) => {
@@ -63,10 +79,21 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
           }
         }
         
-        cardsData.push({ id: doc.id, ...docData } as Card);
+        const card = { id: doc.id, ...docData } as Card;
+        const isNew = card.repetitions === 0 || !card.repetitions;
+
+        if (isNew) {
+          if (newBucket.length < remainingNew) {
+            newBucket.push(card);
+          }
+        } else {
+          if (reviewBucket.length < remainingReview) {
+            reviewBucket.push(card);
+          }
+        }
       });
 
-      return shuffleArray(cardsData);
+      return shuffleArray([...newBucket, ...reviewBucket]);
     },
     enabled: !!currentUser,
     staleTime: 0, // Always consider stale to force fresh shuffle on new session remount
@@ -129,16 +156,30 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
       // Background Processing (Fire and Forget)
       const processUpdates = async () => {
         try {
-          const { nextReview, newLevel } = calculateNextReview(
-            currentCard.level,
-            rating,
+          // Map ReviewRating to SM-2 quality (Fail: 1, Hard: 3, Good: 4)
+          const quality = rating === "fail" ? 1 : rating === "hard" ? 3 : 4;
+          
+          // Handle legacy cards missing these fields
+          const currentInterval = currentCard.interval ?? 0;
+          const currentRepetitions = currentCard.repetitions ?? 0;
+          const currentEaseFactor = currentCard.easeFactor ?? 2.5;
+
+          const sm2Result = calculateSM2(
+            quality,
+            currentInterval,
+            currentRepetitions,
+            currentEaseFactor,
+            currentCard.level
           );
 
           // 1. Critical: Update Card SRS
           const cardRef = doc(db, "cards", currentCard.id!);
           await updateDoc(cardRef, {
-            nextReview: Timestamp.fromDate(nextReview),
-            level: newLevel,
+            nextReview: Timestamp.fromDate(sm2Result.nextReview),
+            level: sm2Result.newLevel,
+            interval: sm2Result.interval,
+            repetitions: sm2Result.repetitions,
+            easeFactor: sm2Result.easeFactor,
           });
 
           // Invalidate queries so dashboard and future sessions get fresh data
@@ -164,7 +205,7 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
                 rating === "good" ? 10 : 5,
                 userProfile,
               ).catch((err) => console.error("XP sync error:", err)),
-              logStudyActivity(currentUser.uid).catch((err) =>
+              logStudyActivity(currentUser.uid, currentCard.repetitions === 0 || !currentCard.repetitions).catch((err) =>
                 console.error("Activity sync error:", err),
               ),
             ]);

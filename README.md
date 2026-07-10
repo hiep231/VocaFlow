@@ -38,6 +38,12 @@ Built by **Hiep DT**.
 - **Smart Import**: Quickly add dozens of words via text paste.
 - **Dashboard**: Track your mastery of different decks.
 
+## 🛠️ System Architecture
+
+The following diagram illustrates how the Web App, Firestore, and the Telegram Bot interact to manage your daily vocabulary drip-feed.
+
+![System Architecture](./screenshots/architecture.png)
+
 ## 📸 Screenshots
 
 ### ☀️ Light Mode

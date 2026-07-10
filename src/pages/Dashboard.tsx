@@ -14,6 +14,8 @@ import { VocabularyList } from "@/components/dashboard/VocabularyList";
 import { Leaderboard } from "@/components/dashboard/Leaderboard";
 import { ScheduleTab } from "@/components/dashboard/ScheduleTab";
 import { calculateLevel } from "@/lib/gamification";
+import { ReleaseNotesModal } from "@/components/ui/ReleaseNotesModal";
+import { useVersionCheck } from "@/hooks/useVersionCheck";
 
 export default function Dashboard() {
   const {
@@ -31,6 +33,8 @@ export default function Dashboard() {
     allCards,
   } = useDashboard();
 
+  const { showReleaseNotes, latestRelease, dismiss } = useVersionCheck();
+
   const [activeTab, setActiveTab] = useState("decks");
 
   return (
@@ -46,6 +50,7 @@ export default function Dashboard() {
               xp={userStats?.xp || 0}
               level={calculateLevel(userStats?.xp || 0)}
               streak={userStats?.streak || 0}
+              activeFreezes={userStats?.activeFreezes || 0}
             />
           </div>
 
@@ -199,6 +204,13 @@ export default function Dashboard() {
         isDeleting={isDeleting}
         onOpenChange={(open) => !open && setDeckToDelete(null)}
         onConfirm={confirmDeleteDeck}
+      />
+
+      {/* Release Notes — only shown after auth is resolved (guaranteed by AuthProvider + ProtectedRoute) */}
+      <ReleaseNotesModal
+        open={showReleaseNotes}
+        release={latestRelease}
+        onDismiss={dismiss}
       />
     </div>
   );

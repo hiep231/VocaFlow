@@ -5,6 +5,75 @@ export interface ReviewResult {
   newLevel: number;
 }
 
+export interface SM2Result {
+  interval: number;
+  repetitions: number;
+  easeFactor: number;
+  nextReview: Date;
+  newLevel: number;
+}
+
+export function getMidnightLocalTime(date: Date): Date {
+  const newDate = new Date(date);
+  newDate.setHours(0, 0, 0, 0);
+  return newDate;
+}
+
+export function calculateSM2(
+  quality: number,
+  interval: number,
+  repetitions: number,
+  easeFactor: number,
+  currentLevel: number
+): SM2Result {
+  let nextInterval = interval;
+  let nextRepetitions = repetitions;
+  let nextEaseFactor = easeFactor;
+
+  // quality: 0-5. Typical SM-2 mapping: Fail: 1, Hard: 3, Good: 4
+  if (quality >= 3) {
+    if (repetitions === 0) {
+      nextInterval = 1;
+    } else if (repetitions === 1) {
+      nextInterval = 6;
+    } else {
+      nextInterval = Math.round(interval * easeFactor);
+    }
+    nextRepetitions = repetitions + 1;
+  } else {
+    nextRepetitions = 0;
+    nextInterval = 1;
+  }
+
+  // Update ease factor
+  nextEaseFactor = easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+  if (nextEaseFactor < 1.3) {
+    nextEaseFactor = 1.3;
+  }
+
+  const now = new Date();
+  const nextReviewDate = new Date(now.getTime() + nextInterval * 24 * 60 * 60 * 1000);
+  
+  // Set to midnight local time to ensure reviews trigger correctly the next day
+  const midnightNextReview = getMidnightLocalTime(nextReviewDate);
+
+  // Keep newLevel logic as fallback for backwards compatibility
+  let newLevel = currentLevel;
+  if (quality >= 4) {
+    newLevel = currentLevel + 1;
+  } else if (quality <= 2) {
+    newLevel = 0;
+  }
+
+  return {
+    interval: nextInterval,
+    repetitions: nextRepetitions,
+    easeFactor: nextEaseFactor,
+    nextReview: midnightNextReview,
+    newLevel
+  };
+}
+
 export function calculateNextReview(
   currentLevel: number,
   rating: ReviewRating

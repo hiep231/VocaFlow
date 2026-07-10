@@ -1,9 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Card } from "@/types";
+import type { Card, CardType } from "@/types";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { fetchWordData } from "@/lib/dictionary-api";
+import { useState } from "react";
 
 interface ManualImportTabProps {
   manualCards: Partial<Card>[];
@@ -18,6 +21,49 @@ export function ManualImportTab({
   onRemoveRow,
   onAddRow,
 }: ManualImportTabProps) {
+  const [loadingRows, setLoadingRows] = useState<Record<number, boolean>>({});
+
+  const handleBlurTerm = async (index: number, term: string | undefined) => {
+    if (!term || term.trim() === "") return;
+    setLoadingRows(prev => ({ ...prev, [index]: true }));
+    try {
+      const result = await fetchWordData(term);
+      if (result) {
+        const card = manualCards[index];
+        
+        // Only auto-fill if the user hasn't typed anything in those fields
+        if (result.ipa && (!card.ipa || card.ipa.trim() === "")) {
+          onUpdateCard(index, "ipa", result.ipa);
+        }
+        
+        // Always try to set the type if it was just created (default is vocab)
+        if (result.type) {
+          onUpdateCard(index, "type", result.type);
+        }
+        
+        if (result.definition && (!card.definition || card.definition.trim() === "")) {
+          onUpdateCard(index, "definition", result.definition);
+        }
+        
+        if (result.example && (!card.example || card.example.trim() === "")) {
+          onUpdateCard(index, "example", result.example);
+        }
+        
+        if (result.collocation && (!card.collocation || card.collocation.trim() === "")) {
+          onUpdateCard(index, "collocation", result.collocation);
+        }
+        
+        if (result.clozeHint && (!card.clozeHint || card.clozeHint.trim() === "")) {
+          onUpdateCard(index, "clozeHint", result.clozeHint);
+        }
+      }
+    } catch (e) {
+      // fail silently
+    } finally {
+      setLoadingRows(prev => ({ ...prev, [index]: false }));
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 pb-2">
@@ -48,16 +94,24 @@ export function ManualImportTab({
 
             {/* Desktop: Row Layout / Mobile: Stack Layout */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 flex-1">
-              <div className="md:col-span-4 space-y-1">
+              <div className="md:col-span-4 space-y-1 relative">
                 <label className="text-xs font-semibold text-slate-500 uppercase md:hidden">
                   Term
                 </label>
-                <Input
-                  placeholder="Term"
-                  value={card.term || ""}
-                  onChange={(e) => onUpdateCard(index, "term", e.target.value)}
-                  className="bg-white dark:bg-slate-950 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                />
+                <div className="relative">
+                  <Input
+                    placeholder="Term"
+                    value={card.term || ""}
+                    onChange={(e) => onUpdateCard(index, "term", e.target.value)}
+                    onBlur={() => handleBlurTerm(index, card.term)}
+                    className="bg-white dark:bg-slate-950 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 pr-8"
+                  />
+                  {loadingRows[index] && (
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                      <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="md:col-span-4 space-y-1">
                 <label className="text-xs font-semibold text-slate-500 uppercase md:hidden">
@@ -96,7 +150,25 @@ export function ManualImportTab({
                   className="bg-white dark:bg-slate-950 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               </div>
-              <div className="md:col-span-12 space-y-1">
+              <div className="md:col-span-2 space-y-1">
+                <label className="text-xs font-semibold text-slate-500 uppercase md:hidden">
+                  Type
+                </label>
+                <Select
+                  value={card.type || "vocab"}
+                  onValueChange={(val) => onUpdateCard(index, "type", val)}
+                >
+                  <SelectTrigger className="bg-white dark:bg-slate-950 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="vocab">Vocab</SelectItem>
+                    <SelectItem value="grammar">Grammar</SelectItem>
+                    <SelectItem value="sentence">Sentence</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="md:col-span-5 space-y-1">
                 <label className="text-xs font-semibold text-slate-500 uppercase md:hidden">
                   Example
                 </label>
@@ -105,6 +177,19 @@ export function ManualImportTab({
                   value={card.example || ""}
                   onChange={(e) =>
                     onUpdateCard(index, "example", e.target.value)
+                  }
+                  className="bg-white dark:bg-slate-950 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 min-h-[60px]"
+                />
+              </div>
+              <div className="md:col-span-5 space-y-1">
+                <label className="text-xs font-semibold text-slate-500 uppercase md:hidden">
+                  Cloze Hint
+                </label>
+                <Textarea
+                  placeholder="Custom hint for fill-in-the-blank (optional)..."
+                  value={card.clozeHint || ""}
+                  onChange={(e) =>
+                    onUpdateCard(index, "clozeHint", e.target.value)
                   }
                   className="bg-white dark:bg-slate-950 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 min-h-[60px]"
                 />

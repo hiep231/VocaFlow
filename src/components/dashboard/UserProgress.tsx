@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Flame, Trophy, Crown, Star, Shield, Zap } from "lucide-react";
+import { Flame, Trophy, Crown, Star, Shield, Zap, Snowflake } from "lucide-react";
 import { getLevelProgress } from "@/lib/gamification";
 import { cn } from "@/lib/utils";
 
@@ -7,6 +7,7 @@ interface UserProgressProps {
   xp: number;
   level: number;
   streak: number;
+  activeFreezes?: number;
 }
 
 const LEVEL_TITLES = [
@@ -298,7 +299,7 @@ function RankBadge({ level }: { level: number }) {
   );
 }
 
-export function UserProgress({ xp, level, streak }: UserProgressProps) {
+export function UserProgress({ xp, level, streak, activeFreezes = 0 }: UserProgressProps) {
   const { percent, next, current } = getLevelProgress(xp);
   // Determine title based on level ranges matching the new progressive curve
   let titleIndex = 0;
@@ -336,18 +337,35 @@ export function UserProgress({ xp, level, streak }: UserProgressProps) {
               </p>
             </div>
 
-            {/* Streak Tag */}
-            <div className="mt-4 md:mt-0 inline-flex items-center gap-3 px-5 py-2.5 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/40 rounded-xl mx-auto md:mx-0 shadow-sm">
-              <div className="bg-orange-100 dark:bg-orange-900/40 p-1.5 rounded-lg">
-                <Flame className="w-5 h-5 text-orange-500 fill-orange-500 animate-pulse" />
+            {/* Streak & Freezes */}
+            <div className="mt-4 md:mt-0 flex flex-wrap items-center justify-center md:justify-start gap-2">
+              <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/40 rounded-xl shadow-sm">
+                <div className="bg-orange-100 dark:bg-orange-900/40 p-1.5 rounded-lg">
+                  <Flame className="w-5 h-5 text-orange-500 fill-orange-500 animate-pulse" />
+                </div>
+                <div className="flex flex-col items-start leading-none">
+                  <span className="text-xl font-bold text-slate-900 dark:text-white tabular-nums">
+                    {streak}
+                  </span>
+                  <span className="text-xs font-semibold text-orange-600/80 dark:text-orange-400 uppercase tracking-wide">
+                    Day Streak
+                  </span>
+                </div>
               </div>
-              <div className="flex flex-col items-start leading-none">
-                <span className="text-xl font-bold text-slate-900 dark:text-white tabular-nums">
-                  {streak}
-                </span>
-                <span className="text-xs font-semibold text-orange-600/80 dark:text-orange-400 uppercase tracking-wide">
-                  Day Streak
-                </span>
+
+              {/* Freezes Tag */}
+              <div className="inline-flex items-center gap-2 px-3 py-2.5 bg-sky-50 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-900/40 rounded-xl shadow-sm h-full">
+                <div className="bg-sky-100 dark:bg-sky-900/40 p-1.5 rounded-lg">
+                  <Snowflake className="w-4 h-4 text-sky-500" />
+                </div>
+                <div className="flex flex-col items-start leading-none">
+                  <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">
+                    {activeFreezes}
+                  </span>
+                  <span className="text-[10px] font-semibold text-sky-600/80 dark:text-sky-400 uppercase tracking-wide">
+                    Freezes
+                  </span>
+                </div>
               </div>
             </div>
           </div>

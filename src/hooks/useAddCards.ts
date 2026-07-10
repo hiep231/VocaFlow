@@ -72,9 +72,11 @@ export function useAddCards(deckId?: string) {
     field: keyof Card,
     value: string
   ) => {
-    const newCards = [...manualCards];
-    newCards[index] = { ...newCards[index], [field]: value };
-    setManualCards(newCards);
+    setManualCards((prev) => {
+      const newCards = [...prev];
+      newCards[index] = { ...newCards[index], [field]: value };
+      return newCards;
+    });
   };
 
   const handleSave = async () => {
@@ -115,10 +117,14 @@ export function useAddCards(deckId?: string) {
           ipa: card.ipa || null,
           collocation: card.collocation || null,
           example: card.example || null,
+          clozeHint: card.clozeHint || null,
           type: card.type || "vocab",
           userId: currentUser.uid,
           deckId: deckId,
           level: 0,
+          interval: 0,
+          repetitions: 0,
+          easeFactor: 2.5,
           nextReview: serverTimestamp(),
           createdAt: serverTimestamp(),
         });

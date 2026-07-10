@@ -34,7 +34,7 @@ export function ClozeCard({ card, onSuccess }: ClozeCardProps) {
     // Escape special characters and trim whitespace
     const escapedTerm = cleanTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const regex = new RegExp(escapedTerm, "gi");
-    return example.replace(regex, "______");
+    return example.replace(regex, "{{BLANK}}");
   }, [cleanTerm, example]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -48,23 +48,33 @@ export function ClozeCard({ card, onSuccess }: ClozeCardProps) {
   };
 
   return (
-    <div className="w-full max-w-md p-6 bg-card border rounded-xl shadow-md text-center">
+    <div className="w-full max-w-md p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-md text-center">
       <h3 className="text-lg font-semibold mb-4 text-muted-foreground">
         Fill in the blank
       </h3>
 
-      <p className="text-xl mb-6 font-medium leading-relaxed">
-        {maskedExample.split("______").map((part, i, arr) => (
+      <p className="text-xl mb-4 font-medium leading-relaxed text-slate-800 dark:text-slate-100">
+        {maskedExample.split("{{BLANK}}").map((part, i, arr) => (
           <span key={i}>
             {part}
             {i < arr.length - 1 && (
-              <span className="inline-block px-1 font-bold text-primary border-b-2 border-dashed border-primary">
-                ______
+              <span className="inline-block px-1 mx-1 font-bold text-indigo-600 dark:text-indigo-400 border-b-2 border-dashed border-indigo-500">
+                {cleanTerm.charAt(0)}
+                <span className="opacity-50">
+                  {"_".repeat(Math.max(3, cleanTerm.length - 1))}
+                </span>
               </span>
             )}
           </span>
         ))}
       </p>
+
+      {(card.clozeHint || card.definition) && (
+        <div className="mb-6 inline-block p-3 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-xl text-sm text-slate-600 dark:text-slate-300 border border-indigo-100 dark:border-indigo-800/30">
+          <span className="font-semibold text-indigo-500 dark:text-indigo-400 mr-2">Hint:</span>
+          {card.clozeHint || card.definition}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <Input
@@ -75,9 +85,9 @@ export function ClozeCard({ card, onSuccess }: ClozeCardProps) {
           }}
           placeholder="Type the missing word..."
           className={cn(
-            "text-center text-lg h-12",
-            status === "correct" && "border-green-500 bg-green-50/10",
-            status === "incorrect" && "border-red-500 bg-red-50/10"
+            "text-center text-lg h-12 bg-white dark:bg-slate-950 text-slate-900 dark:text-white border-slate-200 dark:border-slate-800",
+            status === "correct" && "border-green-500 dark:border-green-500 bg-green-50 dark:bg-green-500/20",
+            status === "incorrect" && "border-red-500 dark:border-red-500 bg-red-50 dark:bg-red-500/20"
           )}
           autoFocus
         />

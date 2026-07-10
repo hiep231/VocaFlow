@@ -35,11 +35,11 @@ export function SmartImportTab({
         <span className="font-bold text-indigo-700 dark:text-indigo-400">
           Format:
         </span>{" "}
-        Term | Definition | IPA | Collocation | Example
+        Term | Definition | IPA | Collocation | Example | Cloze Hint (optional)
       </div>
 
       <Textarea
-        placeholder="Hello | Xin chào | /həˈloʊ/ | Say hello | Hello world"
+        placeholder="Hello | Xin chào | /həˈloʊ/ | Say hello | Hello world | Dùng để chào hỏi"
         className="min-h-[200px] font-mono bg-white dark:bg-slate-950 border-slate-200 dark:border-white/10 focus:border-indigo-500 text-base p-4 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -68,6 +68,7 @@ export function SmartImportTab({
                   <TableHead>IPA</TableHead>
                   <TableHead>Collocation</TableHead>
                   <TableHead>Example</TableHead>
+                  <TableHead>Cloze Hint</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -104,6 +105,9 @@ export function SmartImportTab({
                     </TableCell>
                     <TableCell className="italic dark:text-slate-400">
                       {card.example}
+                    </TableCell>
+                    <TableCell className="italic dark:text-orange-400">
+                      {card.clozeHint}
                     </TableCell>
                   </TableRow>
                 ))}

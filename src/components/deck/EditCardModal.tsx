@@ -33,6 +33,7 @@ export function EditCardModal({
   const [ipa, setIpa] = useState("");
   const [example, setExample] = useState("");
   const [collocation, setCollocation] = useState("");
+  const [clozeHint, setClozeHint] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -42,6 +43,7 @@ export function EditCardModal({
       setIpa(card.ipa || "");
       setExample(card.example || "");
       setCollocation(card.collocation || "");
+      setClozeHint(card.clozeHint || "");
     }
   }, [card]);
 
@@ -62,6 +64,7 @@ export function EditCardModal({
         ipa: ipa || null,
         example: example || null,
         collocation: collocation || null,
+        clozeHint: clozeHint || null,
         updatedAt: serverTimestamp(),
       });
 
@@ -150,6 +153,21 @@ export function EditCardModal({
               id="example"
               value={example}
               onChange={(e) => setExample(e.target.value)}
+              className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 rounded-lg max-h-32"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label
+              htmlFor="clozeHint"
+              className="text-slate-700 dark:text-slate-300"
+            >
+              Cloze Hint
+            </Label>
+            <Textarea
+              id="clozeHint"
+              value={clozeHint}
+              onChange={(e) => setClozeHint(e.target.value)}
+              placeholder="Custom hint for fill-in-the-blank..."
               className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 rounded-lg max-h-32"
             />
           </div>

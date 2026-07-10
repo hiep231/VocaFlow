@@ -20,7 +20,14 @@ service cloud.firestore {
         resource.data.isPublic == true
       );
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || 
+        (
+          resource.data.isPublic == true &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['downloads'])
+        )
+      );
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
     // Cards collection
@@ -36,14 +43,33 @@ service cloud.firestore {
 
     // User Stats collection
     match /user_stats/{userId} {
-      // Allow any authenticated user to read (for leaderboard)
-      // Only allow owner to write/update their own stats
       allow read: if isAuthenticated();
       allow write: if isOwner(userId);
       
       match /activity/{activityId} {
          allow read, write: if isOwner(userId);
       }
+    }
+
+    // Schedules collection (for Drip-feeding)
+    match /schedules/{scheduleId} {
+      allow read: if isAuthenticated() && (
+        resource == null || 
+        resource.data.userId == request.auth.uid
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Templates collection (for Starter Decks)
+    match /templates/{templateId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // Allow write for initial seeding
+    }
+
+    // Users collection (for Telegram settings)
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
     }
   }
 }

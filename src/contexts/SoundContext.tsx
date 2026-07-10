@@ -4,66 +4,115 @@ import {
   useEffect,
   useState,
   useRef,
+  useCallback,
   type ReactNode,
 } from "react";
 
 // Audio Assets (Public URLs for demo purposes)
 const SFX = {
-  correct: "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3", // Soft chime
+  correct: "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3",
   incorrect:
-    "https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3", // Soft error
-  click: "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3", // UI Click
-  hover: "https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3", // Interaction
-  complete: "https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3", // Level up/Complete
+    "https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3",
+  click: "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3",
+  hover: "https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3",
+  complete: "https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3",
 };
 
 export const BGM_TRACKS = [
   {
-    id: "lofi-study",
-    name: "Lo-Fi Study",
-    url: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3",
-    color: "from-indigo-500 to-purple-500",
+    id: "may-lang-thang",
+    name: "Mây Lang Thang",
+    url: "/mp3/Mây Lang Thang.mp3",
+    color: "from-sky-400 to-indigo-500",
   },
   {
-    id: "rain",
-    name: "Heavy Rain",
-    url: "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg",
-    color: "from-slate-500 to-slate-700",
+    id: "man-hoa",
+    name: "Mạn họa",
+    url: "/mp3/Mạn họa.mp3",
+    color: "from-rose-400 to-pink-500",
   },
   {
-    id: "cafe-ambience",
-    name: "Coffee Shop",
-    url: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3",
-    color: "from-orange-400 to-amber-500",
+    id: "qua-nhung-tieng-ve",
+    name: "Qua Những Tiếng Ve",
+    url: "/mp3/Qua Những Tiếng Ve.mp3",
+    color: "from-emerald-400 to-teal-500",
+  },
+  {
+    id: "gia-cung-nhau-la-duoc",
+    name: "Già Cùng Nhau Là Được",
+    url: "/mp3/Già Cùng Nhau Là Được.mp3",
+    color: "from-amber-400 to-orange-500",
+  },
+  {
+    id: "10-ngan-nam",
+    name: "10 Ngàn Năm",
+    url: "/mp3/10 Ngàn Năm.mp3",
+    color: "from-violet-400 to-purple-500",
+  },
+  {
+    id: "khong-tan-tinh-em-dau",
+    name: "Không Tán Tỉnh Em Đâu",
+    url: "/mp3/Không Tán Tỉnh Em Đâu.mp3",
+    color: "from-fuchsia-400 to-pink-500",
+  },
+  {
+    id: "mo",
+    name: "Mơ",
+    url: "/mp3/Mơ.mp3",
+    color: "from-blue-400 to-cyan-500",
+  },
+  {
+    id: "lang-du",
+    name: "Lãng Du",
+    url: "/mp3/Lãng Du.mp3",
+    color: "from-indigo-400 to-blue-500",
+  },
+  {
+    id: "nhu-anh-mo",
+    name: "Như Anh Mơ",
+    url: "/mp3/Như Anh Mơ.mp3",
+    color: "from-green-400 to-emerald-500",
+  },
+  {
+    id: "phieu-bong",
+    name: "Phiêu Bồng",
+    url: "/mp3/Phiêu Bồng.mp3",
+    color: "from-yellow-400 to-orange-500",
+  },
+  {
+    id: "ghe-qua",
+    name: "Ghé Qua",
+    url: "/mp3/Ghé Qua.mp3",
+    color: "from-red-400 to-rose-500",
+  },
+  {
+    id: "mot-thuo-thanh-binh",
+    name: "Một Thuở Thanh Bình",
+    url: "/mp3/Một Thuở Thanh Bình.mp3",
+    color: "from-teal-400 to-cyan-500",
   },
 ];
 
 type SFXType = keyof typeof SFX;
 
 interface SoundContextType {
-  // Config
   isMuted: boolean;
   toggleMute: () => void;
   bgmVolume: number;
   setBGMVolume: (vol: number) => void;
   sfxVolume: number;
   setSFXVolume: (vol: number) => void;
-
-  // BGM
   currentTrackId: string | null;
   isPlaying: boolean;
   playBGM: (trackId: string) => void;
   pauseBGM: () => void;
   resumeBGM: () => void;
-
-  // SFX
   playSFX: (type: SFXType) => void;
 }
 
 const SoundContext = createContext<SoundContextType | undefined>(undefined);
 
 export function SoundProvider({ children }: { children: ReactNode }) {
-  // Settings
   const [isMuted, setIsMuted] = useState(() => {
     const saved = localStorage.getItem("vf_mute");
     return saved ? JSON.parse(saved) : false;
@@ -82,7 +131,6 @@ export function SoundProvider({ children }: { children: ReactNode }) {
   const [currentTrackId, setCurrentTrackId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // Audio Refs
   const bgmRef = useRef<HTMLAudioElement | null>(null);
   const sfxRefs = useRef<Record<string, HTMLAudioElement>>({});
 
@@ -90,6 +138,7 @@ export function SoundProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     Object.entries(SFX).forEach(([key, url]) => {
       const audio = new Audio(url);
+      audio.preload = "none";
       sfxRefs.current[key] = audio;
     });
   }, []);
@@ -105,7 +154,27 @@ export function SoundProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("vf_sfx_vol", sfxVolume.toString());
   }, [sfxVolume]);
 
-  // BGM Logic
+  // Handle Play/Pause
+  useEffect(() => {
+    if (bgmRef.current) {
+      if (isPlaying) {
+        bgmRef.current.play().catch(() => {
+          setIsPlaying(false);
+        });
+      } else {
+        bgmRef.current.pause();
+      }
+    }
+  }, [isPlaying]);
+
+  // Handle Volume & Mute
+  useEffect(() => {
+    if (bgmRef.current) {
+      bgmRef.current.volume = isMuted ? 0 : bgmVolume;
+    }
+  }, [bgmVolume, isMuted]);
+
+  // Handle Track Change
   useEffect(() => {
     if (!currentTrackId) return;
 
@@ -115,76 +184,49 @@ export function SoundProvider({ children }: { children: ReactNode }) {
     if (!bgmRef.current) {
       bgmRef.current = new Audio(track.url);
       bgmRef.current.loop = true;
-    } else if (bgmRef.current.src !== track.url) {
-      bgmRef.current.src = track.url;
+      bgmRef.current.volume = isMuted ? 0 : bgmVolume;
+    } else {
+      if (
+        bgmRef.current.src &&
+        !bgmRef.current.src.endsWith(encodeURI(track.url))
+      ) {
+        bgmRef.current.src = track.url;
+        bgmRef.current.currentTime = 0;
+      }
     }
-
-    bgmRef.current.volume = isMuted ? 0 : bgmVolume;
 
     if (isPlaying) {
-      bgmRef.current
-        .play()
-        .catch((e) => console.error("Audio playback error:", e));
-    } else {
-      bgmRef.current.pause();
+      bgmRef.current.play().catch((err) => {
+        console.error("Audio play error", err);
+        setIsPlaying(false);
+      });
     }
-
-    return () => {
-      // Cleanup handled by ref, we generally want one global BGM instance
-    };
   }, [currentTrackId, isPlaying, bgmVolume, isMuted]);
 
-  // Volume Updates
-  useEffect(() => {
-    if (bgmRef.current) {
-      bgmRef.current.volume = isMuted ? 0 : bgmVolume;
-    }
-  }, [bgmVolume, isMuted]);
-
-  const setBGMVolume = (vol: number) => {
-    setBGMVolumeState(vol);
-  };
-
-  const setSFXVolume = (vol: number) => {
-    setSFXVolumeState(vol);
-  };
-
+  const setBGMVolume = (vol: number) => setBGMVolumeState(vol);
+  const setSFXVolume = (vol: number) => setSFXVolumeState(vol);
   const toggleMute = () => setIsMuted((prev: boolean) => !prev);
 
-  const playBGM = (trackId: string) => {
-    if (currentTrackId === trackId && isPlaying) return;
+  const playBGM = useCallback((trackId: string) => {
     setCurrentTrackId(trackId);
     setIsPlaying(true);
-  };
+  }, []);
 
-  const pauseBGM = () => setIsPlaying(false);
-  const resumeBGM = () => setIsPlaying(true);
+  const pauseBGM = useCallback(() => setIsPlaying(false), []);
+  const resumeBGM = useCallback(() => setIsPlaying(true), []);
 
-  const playSFX = (type: SFXType) => {
-    if (isMuted) return;
-    const audio = sfxRefs.current[type];
-    if (audio) {
-      audio.volume = sfxVolume;
-      audio.currentTime = 0;
-      audio.play().catch(() => {});
-    }
-  };
-
-  // Global Click Listener for Generic UI Sound
-  useEffect(() => {
-    const handleGlobalClick = (e: MouseEvent) => {
-      // Logic to check if clicked element is interactive (button, link, input)
-      const target = e.target as HTMLElement;
-      const clickable = target.closest('button, a, input, [role="button"]');
-
-      if (clickable) {
-        playSFX("click");
+  const playSFX = useCallback(
+    (type: SFXType) => {
+      if (isMuted) return;
+      const audio = sfxRefs.current[type];
+      if (audio) {
+        audio.volume = sfxVolume;
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
       }
-    };
-
-    window.addEventListener("click", handleGlobalClick);
-    return () => window.removeEventListener("click", handleGlobalClick);
-  }, [isMuted, sfxVolume]);
+    },
+    [isMuted, sfxVolume],
+  );
 
   const value = {
     isMuted,
