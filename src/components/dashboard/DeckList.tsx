@@ -2,7 +2,7 @@ import { CreateDeckDialog } from "@/components/deck/CreateDeckDialog";
 import { DeckCard } from "./DeckCard";
 import { StarterDecks } from "./StarterDecks";
 import { Zap } from "lucide-react";
-import type { Deck } from "@/types";
+import type { Card, Deck } from "@/types";
 
 interface DeckWithStats extends Deck {
   learnedCount: number;
@@ -13,6 +13,7 @@ interface DeckListProps {
   loading: boolean;
   onDeleteClick: (deck: Deck) => void;
   onDeckCreated: () => void;
+  allCards?: Card[];
 }
 
 export function DeckList({
@@ -20,6 +21,7 @@ export function DeckList({
   loading,
   onDeleteClick,
   onDeckCreated,
+  allCards = [],
 }: DeckListProps) {
   if (loading) {
     return (
@@ -53,7 +55,12 @@ export function DeckList({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {decks.map((deck) => (
-        <DeckCard key={deck.id} deck={deck} onDeleteClick={onDeleteClick} />
+        <DeckCard
+          key={deck.id}
+          deck={deck}
+          onDeleteClick={onDeleteClick}
+          allCards={allCards}
+        />
       ))}
     </div>
   );
