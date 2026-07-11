@@ -1,4 +1,4 @@
-export const CURRENT_APP_VERSION = "1.4.0";
+export const CURRENT_APP_VERSION = "1.4.1";
 
 export interface ReleaseEntry {
   version: string;
@@ -10,6 +10,19 @@ export interface ReleaseEntry {
 }
 
 export const CHANGELOG: ReleaseEntry[] = [
+  {
+    version: "1.4.1",
+    date: "2026-07-12",
+    title: "Mascot Polish & Bug Fixes",
+    features: [
+      "In-app Changelog — Easily view new updates right from the dashboard"
+    ],
+    bugfixes: [
+      "Fixed Daily Study Limits tracking issue (TypeScript index error)",
+      "Removed fake checkerboard background from mascot images for clean transparency",
+      "Fixed Dark Mode text contrast in Changelog modal"
+    ]
+  },
   {
     version: "1.4.0",
     date: "2026-07-11",
