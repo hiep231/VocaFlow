@@ -187,11 +187,18 @@ export function useDashboard() {
     }
   };
 
+  // Calculate clamped due count based on daily limits
+  const todayStr = new Date().toISOString().split("T")[0];
+  const todayActivity = activityData[todayStr] || { newCards: 0, reviewCards: 0 };
+  const maxReviewLimit = userStats?.maxReviewCardsPerDay ?? 100;
+  const remainingReviewsToday = Math.max(0, maxReviewLimit - (todayActivity.reviewCards || 0));
+  const clampedCardsDue = Math.min(cardsData.dueCount, remainingReviewsToday);
+
   return {
     currentUser,
     logout,
     decks: decksWithStats,
-    cardsDue: cardsData.dueCount,
+    cardsDue: clampedCardsDue,
     loading: false, // React Query handles this but for now let's just say false or derive from queries
     userStats,
     activityData,
