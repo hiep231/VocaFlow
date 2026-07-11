@@ -1,4 +1,4 @@
-export const CURRENT_APP_VERSION = "1.3.0";
+export const CURRENT_APP_VERSION = "1.4.0";
 
 export interface ReleaseEntry {
   version: string;
@@ -10,6 +10,21 @@ export interface ReleaseEntry {
 }
 
 export const CHANGELOG: ReleaseEntry[] = [
+  {
+    version: "1.4.0",
+    date: "2026-07-11",
+    title: "Gamification & Visual Overhaul",
+    features: [
+      "Seed & Plant Visual Progression — Watch your decks grow from a seed into a thriving plant as you earn XP and maintain your streak, or wither if neglected",
+      "Tinder-Style Swiping — A fun, interactive swipe effect in Review Mode",
+      "Keyboard Shortcuts System — Navigate and study faster with hotkeys",
+      "Deck Mastery Visualization — Track your progress visually",
+      "Neo-Brutalism Rank Badges — A fresh, playful retro sticker aesthetic for your user rank",
+    ],
+    improvements: [
+      "Major UI/UX improvements across the dashboard and study screens",
+    ],
+  },
   {
     version: "1.3.0",
     date: "2026-07-10",
