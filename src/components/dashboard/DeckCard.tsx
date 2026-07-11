@@ -33,6 +33,30 @@ export function DeckCard({
     [deck.id, allCards],
   );
 
+  // Calculate days since the most recent study activity for this deck's cards
+  const daysSinceLastStudy = useMemo(() => {
+    const deckCards = allCards.filter((c) => c.deckId === deck.id);
+    if (deckCards.length === 0) return 0;
+
+    const now = Date.now();
+    let mostRecentMs = 0;
+
+    for (const card of deckCards) {
+      // Approximate last study = nextReview minus interval (in days)
+      if (card.nextReview && (card.interval || 0) > 0) {
+        const nextMs =
+          typeof card.nextReview.toMillis === "function"
+            ? card.nextReview.toMillis()
+            : new Date(card.nextReview).getTime();
+        const lastStudyMs = nextMs - (card.interval || 0) * 86400000;
+        if (lastStudyMs > mostRecentMs) mostRecentMs = lastStudyMs;
+      }
+    }
+
+    if (mostRecentMs === 0) return 999; // Never studied
+    return Math.floor((now - mostRecentMs) / 86400000);
+  }, [deck.id, allCards]);
+
   return (
     <div className="relative group h-full">
       <Link to={`/decks/${deck.id}`} className="block h-full">
@@ -42,7 +66,10 @@ export function DeckCard({
               <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center text-indigo-500 dark:text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
                 <BookOpen className="w-5 h-5" />
               </div>
-              <DeckGrowthVisual masteryPercentage={masteryPercentage} />
+              <DeckGrowthVisual
+                masteryPercentage={masteryPercentage}
+                daysSinceLastStudy={daysSinceLastStudy}
+              />
             </div>
             {/* Options or Badge could go here */}
           </div>

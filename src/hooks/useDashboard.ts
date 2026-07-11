@@ -50,8 +50,8 @@ export function useDashboard() {
     data: cardsData = {
       allCards: [],
       dueCount: 0,
-      deckCounts: {},
-      deckLearnedCounts: {},
+      deckCounts: {} as Record<string, number>,
+      deckLearnedCounts: {} as Record<string, number>,
     },
   } = useQuery({
     queryKey: ["allCards", currentUser?.uid],
@@ -60,6 +60,8 @@ export function useDashboard() {
         return {
           allCards: [],
           dueCount: 0,
+          dueNewCount: 0,
+          dueReviewCount: 0,
           deckCounts: {},
           deckLearnedCounts: {},
         };
@@ -73,6 +75,8 @@ export function useDashboard() {
       const deckCounts: Record<string, number> = {};
       const deckLearnedCounts: Record<string, number> = {};
       let dueCount = 0;
+      let dueNewCount = 0;
+      let dueReviewCount = 0;
       const now = new Date();
       const allCardsData: Card[] = [];
 
@@ -89,6 +93,12 @@ export function useDashboard() {
 
         if (nextReview <= now) {
           dueCount++;
+          const isNew = data.repetitions === 0 || !data.repetitions;
+          if (isNew) {
+            dueNewCount++;
+          } else {
+            dueReviewCount++;
+          }
         }
 
         if (deckId) {
@@ -102,6 +112,8 @@ export function useDashboard() {
       return {
         allCards: allCardsData,
         dueCount,
+        dueNewCount,
+        dueReviewCount,
         deckCounts,
         deckLearnedCounts,
       };
@@ -190,15 +202,32 @@ export function useDashboard() {
   // Calculate clamped due count based on daily limits
   const todayStr = new Date().toISOString().split("T")[0];
   const todayActivity = activityData[todayStr] || { newCards: 0, reviewCards: 0 };
+  
   const maxReviewLimit = userStats?.maxReviewCardsPerDay ?? 100;
+  const maxNewLimit = userStats?.maxNewCardsPerDay ?? 20;
+  
   const remainingReviewsToday = Math.max(0, maxReviewLimit - (todayActivity.reviewCards || 0));
-  const clampedCardsDue = Math.min(cardsData.dueCount, remainingReviewsToday);
+  const remainingNewToday = Math.max(0, maxNewLimit - (todayActivity.newCards || 0));
+  
+  // Support old cache format where dueNewCount and dueReviewCount might be undefined
+  const hasSpecificCounts = 'dueNewCount' in cardsData || 'dueReviewCount' in cardsData;
+  let clampedCardsDue = 0;
+  
+  if (hasSpecificCounts) {
+    const clampedReviewCardsDue = Math.min(cardsData.dueReviewCount || 0, remainingReviewsToday);
+    const clampedNewCardsDue = Math.min(cardsData.dueNewCount || 0, remainingNewToday);
+    clampedCardsDue = clampedReviewCardsDue + clampedNewCardsDue;
+  } else {
+    // Fallback for old cache
+    clampedCardsDue = Math.min(cardsData.dueCount || 0, remainingReviewsToday + remainingNewToday);
+  }
 
   return {
     currentUser,
     logout,
     decks: decksWithStats,
     cardsDue: clampedCardsDue,
+    totalCardsDue: cardsData.dueCount || 0,
     loading: false, // React Query handles this but for now let's just say false or derive from queries
     userStats,
     activityData,

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   collection,
@@ -31,11 +31,24 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [localQueueUpdates, setLocalQueueUpdates] = useState<Card[]>([]);
 
+  // Reset session state when navigating to a different deck or toggling cram
+  const cramMode = options?.cram;
+  useEffect(() => {
+    setCurrentIndex(0);
+    setLocalQueueUpdates([]);
+  }, [deckId, cramMode]);
+
   // Fetch due cards
-  const { data: initialStudyQueue = [], isLoading: loading } = useQuery({
+  const { data: queryResult, isLoading: loading } = useQuery({
     queryKey: ["studyCards", currentUser?.uid, deckId, options?.cram],
     queryFn: async () => {
-      if (!currentUser) return [];
+      const defaultReturn = { 
+        cards: [] as Card[], 
+        totalDue: 0, 
+        limitReached: false,
+        limitInfo: { maxNew: 0, studiedNew: 0, maxReview: 0, studiedReview: 0 }
+      };
+      if (!currentUser) return defaultReturn;
 
       // 1. Fetch Limits and Today's Activity
       const stats = await getUserStats(currentUser.uid);
@@ -67,6 +80,7 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
 
       const newBucket: Card[] = [];
       const reviewBucket: Card[] = [];
+      let totalDue = 0;
       const nowMs = Date.now();
       
       querySnapshot.forEach((doc) => {
@@ -79,6 +93,7 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
           }
         }
         
+        totalDue++;
         const card = { id: doc.id, ...docData } as Card;
         const isNew = card.repetitions === 0 || !card.repetitions;
 
@@ -93,7 +108,20 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
         }
       });
 
-      return shuffleArray([...newBucket, ...reviewBucket]);
+      const cards = shuffleArray([...newBucket, ...reviewBucket]);
+      const limitReached = cards.length === 0 && totalDue > 0;
+
+      return { 
+        cards, 
+        totalDue, 
+        limitReached,
+        limitInfo: {
+          maxNew: maxNewCards,
+          studiedNew: todayActivity.newCards || 0,
+          maxReview: maxReviewCards,
+          studiedReview: todayActivity.reviewCards || 0
+        }
+      };
     },
     enabled: !!currentUser,
     staleTime: 0, // Always consider stale to force fresh shuffle on new session remount
@@ -101,25 +129,16 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
     refetchOnMount: "always", // Ensure fresh cards every time study page is entered
   });
 
+  const initialStudyQueue = queryResult?.cards ?? [];
+  const limitReached = queryResult?.limitReached ?? false;
+  const limitInfo = queryResult?.limitInfo;
+
   // Merge server data with local re-queue operations
   const studyQueue = useMemo(() => {
     // If we have local updates (failed cards inserted), use that as the source of truth merged with initial
     if (localQueueUpdates.length > 0) return localQueueUpdates;
     return initialStudyQueue;
   }, [initialStudyQueue, localQueueUpdates]);
-
-  // Initialize local queue when data first loads
-  useMemo(() => {
-    if (
-      initialStudyQueue.length > 0 &&
-      localQueueUpdates.length === 0 &&
-      currentIndex === 0
-    ) {
-      // This logic is tricky with React Query because data updates.
-      // We only want to init once.
-      // Actually, let's just use initialStudyQueue as base and copy to state if we modify it.
-    }
-  }, [initialStudyQueue]);
 
   const currentCard = studyQueue[currentIndex];
 
@@ -130,25 +149,28 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
 
       // OPTIMISTIC UPDATE: Immediate UI transition
       setIsProcessing(true);
-      setCurrentIndex((prev) => prev + 1);
 
       // Re-queue card if rating is "fail"
       if (rating === "fail") {
         setLocalQueueUpdates((prevQueue) => {
           const baseQueue =
-            prevQueue.length > 0 ? prevQueue : initialStudyQueue;
-          const newQueue = [...baseQueue];
+            prevQueue.length > 0 ? [...prevQueue] : [...initialStudyQueue];
 
-          // Insert 3 steps ahead, or at the end if queue is short
-          const insertionIndex = Math.min(
-            currentIndex + 1 + 3,
-            newQueue.length,
-          );
+          // nextIndex is where we'll be after advancing
+          const nextIndex = currentIndex + 1;
 
-          newQueue.splice(insertionIndex, 0, currentCard);
-          return newQueue;
+          // Insert the failed card a few steps ahead of the next position
+          // At least 1 card ahead, ideally 3 steps ahead
+          const stepsAhead = Math.min(3, baseQueue.length - nextIndex);
+          const insertionIndex = nextIndex + Math.max(1, stepsAhead);
+
+          baseQueue.splice(insertionIndex, 0, currentCard);
+          return baseQueue;
         });
       }
+
+      // Advance to next card
+      setCurrentIndex((prev) => prev + 1);
 
       // Allow a small delay for animation before allowing next interaction
       setTimeout(() => setIsProcessing(false), 300);
@@ -183,8 +205,6 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
           });
 
           // Invalidate queries so dashboard and future sessions get fresh data
-          // We don't invalidate immediately to prevent UI jumps, but maybe on unmount or after delay
-          // For now, let's rely on staleness, but if we want dashboard to be right:
           queryClient.invalidateQueries({ queryKey: ["allCards"] });
           queryClient.invalidateQueries({ queryKey: ["decks"] });
 
@@ -255,5 +275,7 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
     isProcessing,
     practiceType,
     handleRate,
+    limitReached,
+    limitInfo,
   };
 }

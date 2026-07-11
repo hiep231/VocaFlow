@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { LogOut, Menu, X, Home, BookOpen, Settings as SettingsIcon } from "lucide-react";
@@ -25,6 +26,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { ChangelogModal } from "./ChangelogModal";
+import { CURRENT_APP_VERSION } from "@/config/changelog";
 
 interface DashboardHeaderProps {
   onLogout: () => void;
@@ -36,6 +39,7 @@ export function DashboardHeader({ onLogout }: DashboardHeaderProps) {
   const location = useLocation();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isChangelogOpen, setIsChangelogOpen] = useState(false);
   const [newCardsLimit, setNewCardsLimit] = useState(20);
   const [reviewCardsLimit, setReviewCardsLimit] = useState(100);
   const [isSaving, setIsSaving] = useState(false);
@@ -54,6 +58,8 @@ export function DashboardHeader({ onLogout }: DashboardHeaderProps) {
     }
   }, [isSettingsOpen, currentUser]);
 
+  const queryClient = useQueryClient();
+
   const handleSaveSettings = async () => {
     if (!currentUser) return;
     setIsSaving(true);
@@ -62,6 +68,7 @@ export function DashboardHeader({ onLogout }: DashboardHeaderProps) {
         maxNewCardsPerDay: newCardsLimit,
         maxReviewCardsPerDay: reviewCardsLimit,
       });
+      queryClient.invalidateQueries({ queryKey: ["userStats", currentUser.uid] });
       setIsSettingsOpen(false);
     } catch (e) {
       console.error("Error saving settings", e);
@@ -94,9 +101,19 @@ export function DashboardHeader({ onLogout }: DashboardHeaderProps) {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg pointer-events-none select-none">
               V
             </div>
-            <span className="font-bold text-xl tracking-tight text-slate-900 dark:text-white hidden sm:block">
-              VocaFlow
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-xl tracking-tight text-slate-900 dark:text-white hidden sm:block">
+                VocaFlow
+              </span>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="hidden sm:flex h-6 text-[10px] px-2 py-0 rounded-full font-mono bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-indigo-100 hover:text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 dark:hover:bg-indigo-500/20"
+                onClick={() => setIsChangelogOpen(true)}
+              >
+                v{CURRENT_APP_VERSION}
+              </Button>
+            </div>
           </div>
 
           {/* Navigation - Desktop */}
@@ -342,6 +359,7 @@ export function DashboardHeader({ onLogout }: DashboardHeaderProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ChangelogModal isOpen={isChangelogOpen} onOpenChange={setIsChangelogOpen} />
     </>
   );
 }

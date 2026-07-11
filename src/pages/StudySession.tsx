@@ -19,6 +19,8 @@ export default function StudySession() {
     loading,
     practiceType,
     handleRate,
+    limitReached,
+    limitInfo,
   } = useStudySession(deckId, { cram: isCramMode });
 
   const [mode, setMode] = useState<StudyMode>("practice");
@@ -41,7 +43,7 @@ export default function StudySession() {
 
   if (loading) return <StudyLoading />;
   if (currentIndex >= studyQueue.length)
-    return <StudyCompletion deckId={deckId} />;
+    return <StudyCompletion deckId={deckId} limitReached={limitReached && currentIndex === 0} limitInfo={limitInfo} />;
   if (!currentCard) return <StudyLoading />;
 
   return (

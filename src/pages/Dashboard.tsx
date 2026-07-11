@@ -22,6 +22,7 @@ export default function Dashboard() {
     logout,
     decks,
     cardsDue,
+    totalCardsDue,
     loading,
     userStats,
     activityData,
@@ -42,7 +43,7 @@ export default function Dashboard() {
       <DashboardHeader onLogout={logout} />
 
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8 min-h-[calc(100vh-10rem)]">
-        <ReviewBanner cardsDue={cardsDue} />
+        <ReviewBanner cardsDue={cardsDue} totalCardsDue={totalCardsDue} />
 
         <div className="space-y-6">
           <div className="mb-6">
