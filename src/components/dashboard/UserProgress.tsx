@@ -1,5 +1,13 @@
 import { motion } from "framer-motion";
-import { Flame, Trophy, Crown, Star, Shield, Zap, Snowflake } from "lucide-react";
+import {
+  Flame,
+  Trophy,
+  Crown,
+  Star,
+  Shield,
+  Zap,
+  Snowflake,
+} from "lucide-react";
 import { getLevelProgress } from "@/lib/gamification";
 import { cn } from "@/lib/utils";
 
@@ -22,60 +30,53 @@ const LEVEL_TITLES = [
 ];
 
 // Helper to get rank configuration based on level
+// Neo-brutalism "Playful Retro Sticker" aesthetic — solid colors, no gradients
 const getRankConfig = (level: number) => {
   if (level < 5)
     return {
       tier: "Bronze",
-      gradient: "from-orange-600 via-amber-700 to-amber-900",
-      text: "text-amber-700 dark:text-amber-500",
-      border: "border-amber-600",
-      ring: "ring-amber-600/30",
-      glow: "shadow-amber-600/40",
+      /** Solid warm peach background */
+      bg: "bg-orange-300",
+      /** Matching dark icon/text color for contrast */
+      text: "text-slate-900",
+      iconColor: "#78350f", // amber-900 equivalent
+      pillBg: "bg-orange-300",
       icon: Shield,
-      wingType: "none",
     };
   if (level < 10)
     return {
       tier: "Silver",
-      gradient: "from-slate-300 via-slate-400 to-slate-600",
-      text: "text-slate-600 dark:text-slate-200",
-      border: "border-slate-300",
-      ring: "ring-slate-400/50",
-      glow: "shadow-slate-400/50",
+      bg: "bg-slate-300",
+      text: "text-slate-900",
+      iconColor: "#1e293b", // slate-800
+      pillBg: "bg-slate-300",
       icon: Star,
-      wingType: "small",
     };
   if (level < 20)
     return {
       tier: "Gold",
-      gradient: "from-yellow-300 via-amber-500 to-yellow-600",
-      text: "text-amber-600 dark:text-yellow-400",
-      border: "border-yellow-400",
-      ring: "ring-yellow-400/60",
-      glow: "shadow-yellow-500/60",
+      bg: "bg-yellow-300",
+      text: "text-slate-900",
+      iconColor: "#713f12", // yellow-900
+      pillBg: "bg-yellow-300",
       icon: Trophy,
-      wingType: "medium",
     };
   if (level < 50)
     return {
       tier: "Diamond",
-      gradient: "from-cyan-300 via-blue-500 to-indigo-600",
-      text: "text-blue-600 dark:text-cyan-300",
-      border: "border-cyan-400",
-      ring: "ring-cyan-400/80",
-      glow: "shadow-cyan-400/80",
+      bg: "bg-cyan-300",
+      text: "text-slate-900",
+      iconColor: "#0c4a6e", // sky-900
+      pillBg: "bg-cyan-300",
       icon: Zap,
-      wingType: "large",
     };
   return {
     tier: "Legendary",
-    gradient: "from-pink-500 via-purple-500 to-indigo-600",
-    text: "text-purple-600 dark:text-fuchsia-300",
-    border: "border-fuchsia-400",
-    ring: "ring-fuchsia-500/80",
-    glow: "shadow-fuchsia-500/80",
+    bg: "bg-fuchsia-400",
+    text: "text-slate-900",
+    iconColor: "#4a044e", // fuchsia-950
+    pillBg: "bg-fuchsia-400",
     icon: Crown,
-    wingType: "epic",
   };
 };
 
@@ -84,213 +85,53 @@ function RankBadge({ level }: { level: number }) {
   const Icon = config.icon;
 
   return (
-    <div className="relative group w-40 h-32 flex items-center justify-center">
-      {/* 1. Outer Ambient Glow */}
-      <div
+    <div className="relative flex flex-col items-center justify-center group w-32 h-36">
+      {/* Main Badge Container — Neo-brutalism squircle with hard offset shadow */}
+      <motion.div
+        whileHover={{
+          x: -2,
+          y: -2,
+          boxShadow: "8px 8px 0px rgba(15,23,42,1)",
+        }}
+        whileTap={{
+          x: 6,
+          y: 6,
+          boxShadow: "0px 0px 0px rgba(15,23,42,1)",
+        }}
+        initial={{
+          boxShadow: "6px 6px 0px rgba(15,23,42,1)",
+        }}
+        transition={{ type: "spring", stiffness: 500, damping: 20 }}
         className={cn(
-          "absolute inset-0 rounded-full blur-3xl opacity-30 transition-all duration-700 group-hover:opacity-60",
-          config.gradient.replace("from-", "bg-")
-        )}
-      />
-
-      {/* 2. Wings Container */}
-      <svg
-        className="absolute w-full h-full drop-shadow-md pointer-events-none z-0 overflow-visible"
-        viewBox="0 0 160 120"
-        fill="none"
-      >
-        <defs>
-          <linearGradient
-            id={`grad-${level}`}
-            x1="0%"
-            y1="0%"
-            x2="100%"
-            y2="0%"
-          >
-            <stop
-              offset="0%"
-              className={cn(
-                "stop-color",
-                String(config.text.split(" ")[0]).replace(
-                  "text-",
-                  "text-opacity-20 text-"
-                )
-              )}
-              stopColor="currentColor"
-              stopOpacity="0.8"
-            />
-            <stop
-              offset="50%"
-              className={cn(
-                "stop-color",
-                String(config.text.split(" ")[0]).replace("text-", "text-")
-              )}
-              stopColor="currentColor"
-              stopOpacity="1"
-            />
-            <stop
-              offset="100%"
-              className={cn(
-                "stop-color",
-                String(config.text.split(" ")[0]).replace(
-                  "text-",
-                  "text-opacity-20 text-"
-                )
-              )}
-              stopColor="currentColor"
-              stopOpacity="0.8"
-            />
-          </linearGradient>
-
-          {/* Unique gradients for wings */}
-          <linearGradient id="wing-gold" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#FCD34D" />
-            <stop offset="100%" stopColor="#D97706" />
-          </linearGradient>
-          <linearGradient id="wing-diamond" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#22D3EE" />
-            <stop offset="100%" stopColor="#3B82F6" />
-          </linearGradient>
-          <linearGradient id="wing-epic" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#E879F9" />
-            <stop offset="50%" stopColor="#A855F7" />
-            <stop offset="100%" stopColor="#6366F1" />
-          </linearGradient>
-        </defs>
-
-        {/* -- WINGS LOGIC -- */}
-
-        {/* Small Wings (Silver+) */}
-        {level >= 5 && (
-          <g
-            className={cn(
-              "transition-all duration-500 origin-center",
-              level >= 20 ? "scale-90 opacity-0" : "opacity-100"
-            )}
-          >
-            {/* Left Small Wing */}
-            <path
-              d="M45,60 Q30,50 35,30 Q25,40 20,60 L45,65 Z"
-              fill={level < 10 ? "#CBD5E1" : "url(#wing-gold)"}
-              stroke="none"
-            />
-            {/* Right Small Wing */}
-            <path
-              d="M115,60 Q130,50 125,30 Q135,40 140,60 L115,65 Z"
-              fill={level < 10 ? "#CBD5E1" : "url(#wing-gold)"}
-              stroke="none"
-            />
-          </g>
-        )}
-
-        {/* Medium to Large Wings (Gold/Diamond) */}
-        {level >= 10 && level < 50 && (
-          <g
-            className={cn(
-              "transition-all duration-500",
-              level >= 20 ? "drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" : ""
-            )}
-          >
-            {/* Left Wing Layers */}
-            <path
-              d="M50,60 C40,40 20,20 10,25 C20,35 30,50 40,65 Z"
-              fill={level >= 20 ? "url(#wing-diamond)" : "url(#wing-gold)"}
-            />
-            <path
-              d="M45,70 C35,60 15,55 5,65 C15,70 30,75 42,75 Z"
-              fill={level >= 20 ? "url(#wing-diamond)" : "url(#wing-gold)"}
-              opacity="0.8"
-            />
-
-            {/* Right Wing Layers */}
-            <path
-              d="M110,60 C120,40 140,20 150,25 C140,35 130,50 120,65 Z"
-              fill={level >= 20 ? "url(#wing-diamond)" : "url(#wing-gold)"}
-            />
-            <path
-              d="M115,70 C125,60 145,55 155,65 C145,70 130,75 118,75 Z"
-              fill={level >= 20 ? "url(#wing-diamond)" : "url(#wing-gold)"}
-              opacity="0.8"
-            />
-          </g>
-        )}
-
-        {/* EPIC Wings (Legendary) */}
-        {level >= 50 && (
-          <g className="animate-pulse-slow drop-shadow-[0_0_15px_rgba(168,85,247,0.6)]">
-            <path
-              d="M50,60 Q30,20 0,10 Q20,40 40,70 Z"
-              fill="url(#wing-epic)"
-            />
-            <path
-              d="M45,75 Q20,60 5,50 Q25,80 40,85 Z"
-              fill="url(#wing-epic)"
-              opacity="0.7"
-            />
-            <path
-              d="M48,85 Q30,90 10,95 Q35,95 48,90 Z"
-              fill="url(#wing-epic)"
-              opacity="0.5"
-            />
-
-            <path
-              d="M110,60 Q130,20 160,10 Q140,40 120,70 Z"
-              fill="url(#wing-epic)"
-            />
-            <path
-              d="M115,75 Q140,60 155,50 Q135,80 120,85 Z"
-              fill="url(#wing-epic)"
-              opacity="0.7"
-            />
-            <path
-              d="M112,85 Q130,90 150,95 Q125,95 112,90 Z"
-              fill="url(#wing-epic)"
-              opacity="0.5"
-            />
-          </g>
-        )}
-      </svg>
-
-      {/* 3. Main Circle Container */}
-      <div
-        className={cn(
-          "relative z-10 w-24 h-24 rounded-full flex items-center justify-center bg-white dark:bg-slate-900 transition-transform group-hover:scale-105",
-          "border-[4px]",
-          config.border,
-          config.glow
+          "relative z-10 w-24 h-24 flex flex-col items-center justify-center",
+          "rounded-3xl border-4 border-slate-900 dark:border-slate-100",
+          config.bg,
         )}
       >
-        {/* Inner Ring */}
-        <div
-          className={cn(
-            "absolute inset-1 rounded-full border border-dashed opacity-40",
-            config.border
-          )}
-        />
-
-        {/* Valid Level Content */}
-        <div className="flex flex-col items-center justify-center relative z-10">
-          <Icon className={cn("w-6 h-6 mb-0.5 drop-shadow-sm", config.text)} />
-          <span
-            className={cn(
-              "text-3xl font-black leading-none bg-clip-text text-transparent bg-gradient-to-br filter drop-shadow-sm",
-              config.gradient
-            )}
-          >
+        <div className="flex flex-col items-center gap-1 z-20 mt-1">
+          <Icon
+            className={cn("w-8 h-8", config.text)}
+            strokeWidth={3}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ color: config.iconColor }}
+          />
+          <span className={cn("text-2xl font-black leading-none", config.text)}>
             {level}
           </span>
         </div>
+      </motion.div>
 
-        {/* Glass Shine */}
-        <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/40 to-transparent opacity-50 pointer-events-none" />
-      </div>
-
-      {/* 4. Rank Label (Pill at bottom) */}
+      {/* Rank Label Pill — Retro sticker style */}
       <div
         className={cn(
-          "absolute -bottom-3 z-30 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg border border-white/20",
-          "bg-gradient-to-r text-white",
-          config.gradient
+          "absolute -bottom-3 z-30 px-4 py-1.5 rounded-full",
+          "text-[10px] font-black uppercase tracking-[0.18em]",
+          "border-2 border-slate-900 dark:border-slate-100",
+          "text-slate-900 dark:text-slate-900",
+          "shadow-[3px_3px_0px_rgba(15,23,42,1)]",
+          "transition-transform duration-200 group-hover:-translate-y-1",
+          config.pillBg,
         )}
       >
         {config.tier}
@@ -299,16 +140,27 @@ function RankBadge({ level }: { level: number }) {
   );
 }
 
-export function UserProgress({ xp, level, streak, activeFreezes = 0 }: UserProgressProps) {
+export function UserProgress({
+  xp,
+  level,
+  streak,
+  activeFreezes = 0,
+}: UserProgressProps) {
   const { percent, next, current } = getLevelProgress(xp);
   // Determine title based on level ranges matching the new progressive curve
   let titleIndex = 0;
-  if (level >= 50) titleIndex = 7; // Legend
-  else if (level >= 40) titleIndex = 6; // Grandmaster
-  else if (level >= 30) titleIndex = 5; // Master
-  else if (level >= 20) titleIndex = 4; // Expert
-  else if (level >= 15) titleIndex = 3; // Scholar
-  else if (level >= 10) titleIndex = 2; // Apprentice
+  if (level >= 50)
+    titleIndex = 7; // Legend
+  else if (level >= 40)
+    titleIndex = 6; // Grandmaster
+  else if (level >= 30)
+    titleIndex = 5; // Master
+  else if (level >= 20)
+    titleIndex = 4; // Expert
+  else if (level >= 15)
+    titleIndex = 3; // Scholar
+  else if (level >= 10)
+    titleIndex = 2; // Apprentice
   else if (level >= 5) titleIndex = 1; // Rookie
 
   const title = LEVEL_TITLES[titleIndex];
