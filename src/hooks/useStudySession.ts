@@ -191,7 +191,7 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
             currentInterval,
             currentRepetitions,
             currentEaseFactor,
-            currentCard.level
+            currentCard.level ?? 0
           );
 
           // 1. Critical: Update Card SRS
@@ -207,6 +207,7 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
           // Invalidate queries so dashboard and future sessions get fresh data
           queryClient.invalidateQueries({ queryKey: ["allCards"] });
           queryClient.invalidateQueries({ queryKey: ["decks"] });
+          queryClient.invalidateQueries({ queryKey: ["deckCards"] });
 
           // 2. Secondary: Update Stats (Non-blocking)
           if (rating === "good" || rating === "hard") {

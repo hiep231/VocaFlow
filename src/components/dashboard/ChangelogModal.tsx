@@ -10,7 +10,7 @@ interface ChangelogModalProps {
 export function ChangelogModal({ isOpen, onOpenChange }: ChangelogModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] p-0 overflow-hidden flex flex-col bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+      <DialogContent className="max-w-2xl max-h-[85vh] w-[calc(100%-2rem)] sm:w-full p-0 overflow-hidden flex flex-col bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl">
         <DialogHeader className="p-6 pb-4 border-b border-slate-100 dark:border-slate-800">
           <DialogTitle className="text-2xl font-bold flex items-center gap-2 text-slate-900 dark:text-white">
             What's New in VocaFlow
