@@ -21,6 +21,7 @@ export default function StudySession() {
     handleRate,
     limitReached,
     limitInfo,
+    resetSession,
   } = useStudySession(deckId, { cram: isCramMode });
 
   const [mode, setMode] = useState<StudyMode>("practice");
@@ -39,17 +40,17 @@ export default function StudySession() {
         setMode("practice");
       }
     }
-  }, [currentCard]);
+  }, [currentCard?.id]);
 
   if (loading) return <StudyLoading />;
   if (currentIndex >= studyQueue.length)
-    return <StudyCompletion deckId={deckId} limitReached={limitReached && currentIndex === 0} limitInfo={limitInfo} />;
+    return <StudyCompletion deckId={deckId} limitReached={limitReached && currentIndex === 0} limitInfo={limitInfo} onReviewAgain={resetSession} isCramMode={isCramMode} />;
   if (!currentCard) return <StudyLoading />;
 
   return (
     <div className="flex flex-col items-center min-h-screen p-4 md:p-8 relative overflow-hidden bg-slate-50 dark:bg-slate-950">
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-full blur-[100px] pointer-events-none mix-blend-multiply dark:mix-blend-normal" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-[100px] pointer-events-none mix-blend-multiply dark:mix-blend-normal" />
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-full blur-3xl pointer-events-none transform-gpu" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-3xl pointer-events-none transform-gpu" />
 
       <StudyHeader
         deckId={deckId}

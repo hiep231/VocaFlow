@@ -267,6 +267,12 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
     return "scramble";
   }, [currentCard]);
 
+  const resetSession = useCallback(() => {
+    setCurrentIndex(0);
+    setLocalQueueUpdates([]);
+    queryClient.invalidateQueries({ queryKey: ["studyCards", currentUser?.uid, deckId, options?.cram] });
+  }, [queryClient, currentUser?.uid, deckId, options?.cram]);
+
   return {
     studyQueue,
     currentCard,
@@ -277,5 +283,6 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
     handleRate,
     limitReached,
     limitInfo,
+    resetSession,
   };
 }

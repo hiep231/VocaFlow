@@ -1,4 +1,4 @@
-export const CURRENT_APP_VERSION = "1.4.1";
+export const CURRENT_APP_VERSION = "1.4.2";
 
 export interface ReleaseEntry {
   version: string;
@@ -11,17 +11,31 @@ export interface ReleaseEntry {
 
 export const CHANGELOG: ReleaseEntry[] = [
   {
+    version: "1.4.2",
+    date: "2026-07-12",
+    title: "Study Experience & Performance Fixes",
+    bugfixes: [
+      'Fixed "Review Again" button getting stuck in Cram Mode',
+      "Fixed Deck mastery visual showing as an Egg permanently on the Dashboard due to missing card data",
+      "Fixed StudySession mode randomly resetting to Practice tab when user switches tabs",
+      "Removed heavy CSS blur effects on Study screen to eliminate UI stuttering and lag",
+    ],
+    improvements: [
+      "Improved Spaced Repetition (SRS) visual progression by calculating mastery on a graduated interval curve",
+    ],
+  },
+  {
     version: "1.4.1",
     date: "2026-07-12",
     title: "Mascot Polish & Bug Fixes",
     features: [
-      "In-app Changelog — Easily view new updates right from the dashboard"
+      "In-app Changelog — Easily view new updates right from the dashboard",
     ],
     bugfixes: [
       "Fixed Daily Study Limits tracking issue (TypeScript index error)",
       "Removed fake checkerboard background from mascot images for clean transparency",
-      "Fixed Dark Mode text contrast in Changelog modal"
-    ]
+      "Fixed Dark Mode text contrast in Changelog modal",
+    ],
   },
   {
     version: "1.4.0",
@@ -52,9 +66,7 @@ export const CHANGELOG: ReleaseEntry[] = [
       "Study session now separates 'New' cards from 'Due' cards and respects your daily allowance even after a page refresh",
       "Settings dialog added to the Dashboard header — easily adjust your daily card limits",
     ],
-    bugfixes: [
-      "Fixed streak not persisting across timezone boundaries",
-    ],
+    bugfixes: ["Fixed streak not persisting across timezone boundaries"],
   },
   {
     version: "1.2.0",

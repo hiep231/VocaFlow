@@ -119,6 +119,7 @@ export default function Dashboard() {
                       loading={loading}
                       onDeleteClick={setDeckToDelete}
                       onDeckCreated={fetchDecksAndStats}
+                      allCards={allCards}
                     />
                   </motion.div>
                 )}

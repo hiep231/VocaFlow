@@ -1,6 +1,6 @@
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, RotateCw, AlertCircle } from "lucide-react";
+import { AlertCircle, CheckCircle, RotateCw } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface LimitInfo {
   maxNew: number;
@@ -13,9 +13,18 @@ interface StudyCompletionProps {
   deckId?: string;
   limitReached?: boolean;
   limitInfo?: LimitInfo;
+  onReviewAgain?: () => void;
+  isCramMode?: boolean;
 }
 
-export function StudyCompletion({ deckId, limitReached, limitInfo }: StudyCompletionProps) {
+export function StudyCompletion({ deckId, limitReached, limitInfo, onReviewAgain, isCramMode }: StudyCompletionProps) {
+
+  const handleReviewAgainClick = (e: React.MouseEvent) => {
+    if (isCramMode && onReviewAgain) {
+      e.preventDefault();
+      onReviewAgain();
+    }
+  };
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] h-screen px-4 text-center bg-slate-50 dark:bg-slate-950 w-full">
       <div className={`mb-6 ${limitReached ? 'text-amber-500' : 'text-green-500'}`}>
@@ -57,7 +66,7 @@ export function StudyCompletion({ deckId, limitReached, limitInfo }: StudyComple
 
       <div className="flex flex-col sm:flex-row gap-4">
         {deckId && (
-          <Link to={`/study/${deckId}?cram=true`}>
+          <Link to={`/study/${deckId}?cram=true`} onClick={handleReviewAgainClick}>
             <Button
               variant={limitReached ? "default" : "outline"}
               size="lg"
