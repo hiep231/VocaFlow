@@ -3,6 +3,7 @@ import { UserProgress } from "@/components/dashboard/UserProgress";
 import { ReviewBanner } from "@/components/dashboard/ReviewBanner";
 import { StreakCalendar } from "@/components/dashboard/StreakCalendar";
 import { DeckList } from "@/components/dashboard/DeckList";
+import { ProjectionStats } from "@/components/dashboard/ProjectionStats";
 import { DeleteDeckDialog } from "@/components/deck/DeleteDeckDialog";
 import { useDashboard } from "@/hooks/useDashboard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -55,6 +56,12 @@ export default function Dashboard() {
             />
           </div>
 
+          {/* Projection Stats — Mastery Forecast */}
+          <ProjectionStats
+            allCards={allCards || []}
+            activityData={activityData}
+          />
+
           <Tabs
             defaultValue="decks"
             value={activeTab}
@@ -64,7 +71,13 @@ export default function Dashboard() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
               <div className="w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
                 <TabsList className="bg-slate-100 dark:bg-slate-800/50 p-1 relative w-max sm:w-auto flex whitespace-nowrap">
-                  {["decks", "activity", "vocab", "schedule", "leaderboard"].map((tab) => (
+                  {[
+                    "decks",
+                    "activity",
+                    "vocab",
+                    "schedule",
+                    "leaderboard",
+                  ].map((tab) => (
                     <TabsTrigger
                       key={tab}
                       value={tab}

@@ -1,4 +1,4 @@
-export const CURRENT_APP_VERSION = "1.4.2";
+export const CURRENT_APP_VERSION = "1.4.3";
 
 export interface ReleaseEntry {
   version: string;
@@ -10,6 +10,18 @@ export interface ReleaseEntry {
 }
 
 export const CHANGELOG: ReleaseEntry[] = [
+  {
+    version: "1.4.3",
+    date: "2026-07-13",
+    title: "Mastery Forecast & UI Polish",
+    features: [
+      "Mastery Forecast — A brand new widget on the Dashboard that predicts when you will master your deck based on your 7-day study velocity",
+    ],
+    improvements: [
+      "Optimized Dashboard performance by reusing existing data for the new forecast widget without extra database reads",
+      "Smarter edge-case handling for new users with 0 recent activity",
+    ],
+  },
   {
     version: "1.4.2",
     date: "2026-07-12",
