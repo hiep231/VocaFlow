@@ -36,11 +36,7 @@ export default function AddCardsPage() {
   } = useAddCards(deckId);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans selection:bg-indigo-500/30 pb-20 md:pb-0">
-      {/* Background Effects */}
-      <div className="fixed top-[-20%] right-[-10%] w-[50%] h-[60%] bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-full blur-[120px] pointer-events-none mix-blend-multiply dark:mix-blend-normal animate-pulse-slow z-0" />
-      <div className="fixed bottom-[-20%] left-[-10%] w-[50%] h-[60%] bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-full blur-[120px] pointer-events-none mix-blend-multiply dark:mix-blend-normal animate-pulse-slow delay-1000 z-0" />
-
+    <div className="w-full relative pb-20 md:pb-0">
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">

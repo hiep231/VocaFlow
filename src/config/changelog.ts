@@ -1,4 +1,4 @@
-export const CURRENT_APP_VERSION = "1.4.3";
+export const CURRENT_APP_VERSION = "1.5.0";
 
 export interface ReleaseEntry {
   version: string;
@@ -10,6 +10,21 @@ export interface ReleaseEntry {
 }
 
 export const CHANGELOG: ReleaseEntry[] = [
+  {
+    version: "1.5.0",
+    date: "2026-07-15",
+    title: "Store & Coins Economy",
+    features: [
+      "Store & Coins Economy — Introduced Coins that match your XP. Earn Coins by studying and use them in the new Store to buy items!",
+      "Streak Freeze Store — Buy Streak Freezes to protect your study streak. The base price is 50 Coins and increases dynamically by 25 Coins for every freeze bought in the same week.",
+      "Weekly Price Reset — The Streak Freeze price resets to 50 Coins every Monday at midnight.",
+    ],
+    improvements: [
+      "Added a new Store page with a beautiful UI and shopping cart",
+      "Added Store navigation links to both Desktop and Mobile sidebar menus",
+      "Seamlessly upgraded existing user stats to inherit Coins based on total accumulated XP",
+    ],
+  },
   {
     version: "1.4.3",
     date: "2026-07-13",

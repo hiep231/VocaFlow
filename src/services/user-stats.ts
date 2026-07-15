@@ -166,6 +166,7 @@ export const addXP = async (
       lastStudyDate: Timestamp.fromDate(new Date()),
       xp: amount,
       level: level,
+      coins: amount,
       ...profileUpdate,
     };
     await setDoc(statsRef, initialStats, { merge: true });
@@ -175,12 +176,70 @@ export const addXP = async (
   const data = statsSnap.data() as UserStats;
   const newXP = (data.xp || 0) + amount;
   const newLevel = calculateLevel(newXP);
+  const currentCoins = data.coins !== undefined ? data.coins : (data.xp || 0);
+  const newCoins = currentCoins + amount;
 
   await updateDoc(statsRef, {
     xp: newXP,
     level: newLevel,
+    coins: newCoins,
     ...profileUpdate,
   });
+};
+
+const getMonday = (d: Date) => {
+  const date = new Date(d);
+  const day = date.getDay();
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(date.setDate(diff)).setHours(0, 0, 0, 0);
+};
+
+export const buyStreakFreeze = async (userId: string): Promise<UserStats | null> => {
+  const statsRef = doc(db, "user_stats", userId);
+  const statsSnap = await getDoc(statsRef);
+  
+  if (!statsSnap.exists()) {
+    throw new Error("User stats not found");
+  }
+  
+  const data = statsSnap.data() as UserStats;
+  const currentCoins = data.coins !== undefined ? data.coins : (data.xp || 0);
+  
+  const today = new Date();
+  let freezesBoughtThisWeek = data.freezesBoughtThisWeek || 0;
+  
+  if (data.lastFreezePurchaseDate) {
+    const lastPurchaseDate = data.lastFreezePurchaseDate.toDate();
+    if (getMonday(today) > getMonday(lastPurchaseDate)) {
+      // It's a new week, reset
+      freezesBoughtThisWeek = 0;
+    }
+  }
+  
+  const cost = 50 + (freezesBoughtThisWeek * 25);
+  
+  if (currentCoins < cost) {
+    throw new Error("Not enough coins");
+  }
+  
+  const newCoins = currentCoins - cost;
+  const newActiveFreezes = (data.activeFreezes || 0) + 1;
+  const newFreezesBoughtThisWeek = freezesBoughtThisWeek + 1;
+  
+  await updateDoc(statsRef, {
+    coins: newCoins,
+    activeFreezes: newActiveFreezes,
+    freezesBoughtThisWeek: newFreezesBoughtThisWeek,
+    lastFreezePurchaseDate: Timestamp.fromDate(today)
+  });
+  
+  return {
+    ...data,
+    coins: newCoins,
+    activeFreezes: newActiveFreezes,
+    freezesBoughtThisWeek: newFreezesBoughtThisWeek,
+    lastFreezePurchaseDate: Timestamp.fromDate(today)
+  };
 };
 
 export const getLeaderboard = async (limitCount = 10) => {

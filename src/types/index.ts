@@ -54,4 +54,7 @@ export interface UserStats {
   maxNewCardsPerDay?: number;
   maxReviewCardsPerDay?: number;
   activeFreezes?: number;
+  coins?: number;
+  freezesBoughtThisWeek?: number;
+  lastFreezePurchaseDate?: any; // Timestamp
 }

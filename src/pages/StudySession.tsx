@@ -48,9 +48,7 @@ export default function StudySession() {
   if (!currentCard) return <StudyLoading />;
 
   return (
-    <div className="flex flex-col items-center min-h-screen p-4 md:p-8 relative overflow-hidden bg-slate-50 dark:bg-slate-950">
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-full blur-3xl pointer-events-none transform-gpu" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-3xl pointer-events-none transform-gpu" />
+    <div className="flex flex-col items-center w-full h-full p-4 md:p-8 relative">
 
       <StudyHeader
         deckId={deckId}

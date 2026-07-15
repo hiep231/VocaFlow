@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, Menu, X, Home, BookOpen, Settings as SettingsIcon } from "lucide-react";
+import { LogOut, Menu, X, Home, BookOpen, Settings as SettingsIcon, ShoppingCart } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import {
   DropdownMenu,
@@ -138,6 +138,16 @@ export function DashboardHeader({ onLogout }: DashboardHeaderProps) {
             >
               Public Library
             </Link>
+            <Link
+              to="/store"
+              className={`text-sm font-medium transition-colors ${
+                isActive("/store")
+                  ? "text-indigo-600 dark:text-indigo-400 underline underline-offset-[16px] decoration-2 decoration-indigo-600 dark:decoration-indigo-400"
+                  : "text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
+              }`}
+            >
+              Store
+            </Link>
           </nav>
 
           {/* Right: User Profile (Always Visible) */}
@@ -264,6 +274,18 @@ export function DashboardHeader({ onLogout }: DashboardHeaderProps) {
                 >
                   <BookOpen className="w-5 h-5" />
                   Public Library
+                </Link>
+                <Link
+                  to="/store"
+                  onClick={() => setIsSidebarOpen(false)}
+                  className={`flex items-center gap-3 p-3 rounded-xl transition-all font-medium ${
+                    isActive("/store")
+                      ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-indigo-600 dark:hover:text-indigo-400"
+                  }`}
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                  Store
                 </Link>
               </nav>
 

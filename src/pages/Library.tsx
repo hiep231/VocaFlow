@@ -5,8 +5,6 @@ import { LibraryDeckCard } from "@/components/library/LibraryDeckCard";
 import { DeckPreviewModal } from "@/components/library/DeckPreviewModal";
 import { Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Library() {
@@ -40,11 +38,8 @@ export default function Library() {
     setIsPreviewOpen(true);
   };
 
-  const { logout } = useAuth();
-
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
-      <DashboardHeader onLogout={logout} />
+    <div className="w-full relative">
       <div className="container mx-auto px-4 py-8 pb-32 max-w-7xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">

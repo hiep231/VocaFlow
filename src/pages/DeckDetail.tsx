@@ -128,10 +128,7 @@ export default function DeckDetail() {
   }
 
   return (
-    <div className="min-w-full min-h-screen p-8 relative overflow-hidden bg-slate-50 dark:bg-slate-950 font-sans selection:bg-purple-500/30">
-      <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[60%] bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-full blur-[120px] pointer-events-none mix-blend-multiply dark:mix-blend-normal animate-pulse-slow" />
-      <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[60%] bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-[120px] pointer-events-none mix-blend-multiply dark:mix-blend-normal animate-pulse-slow delay-1000" />
-
+    <div className="w-full relative p-4 md:p-8">
       <div className="max-w-7xl mx-auto relative z-10">
         <DeckHeader
           deck={deck}

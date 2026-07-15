@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SoundProvider } from "@/contexts/SoundContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { Toaster } from "sonner";
 import { AudioPlayer } from "@/components/audio/AudioPlayer";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -17,6 +18,7 @@ const DeckDetail = lazy(() => import("@/pages/DeckDetail"));
 const AddCardsPage = lazy(() => import("@/pages/AddCardsPage"));
 const LibraryPage = lazy(() => import("@/pages/Library"));
 const DemoPage = lazy(() => import("@/pages/DemoPage"));
+const StorePage = lazy(() => import("@/pages/Store"));
 
 // Simple loading component
 const PageLoader = () => (
@@ -40,7 +42,9 @@ export default function App() {
                   path="/dashboard"
                   element={
                     <ProtectedRoute>
-                      <Dashboard />
+                      <AppLayout>
+                        <Dashboard />
+                      </AppLayout>
                     </ProtectedRoute>
                   }
                 />
@@ -48,7 +52,9 @@ export default function App() {
                   path="/study"
                   element={
                     <ProtectedRoute>
-                      <StudySession />
+                      <AppLayout hideHeader hideFooter bgTheme="study">
+                        <StudySession />
+                      </AppLayout>
                     </ProtectedRoute>
                   }
                 />
@@ -56,7 +62,9 @@ export default function App() {
                   path="/study/:deckId"
                   element={
                     <ProtectedRoute>
-                      <StudySession />
+                      <AppLayout hideHeader hideFooter bgTheme="study">
+                        <StudySession />
+                      </AppLayout>
                     </ProtectedRoute>
                   }
                 />
@@ -64,7 +72,9 @@ export default function App() {
                   path="/decks/:deckId"
                   element={
                     <ProtectedRoute>
-                      <DeckDetail />
+                      <AppLayout hideHeader bgTheme="deck">
+                        <DeckDetail />
+                      </AppLayout>
                     </ProtectedRoute>
                   }
                 />
@@ -72,7 +82,9 @@ export default function App() {
                   path="/decks/:deckId/add"
                   element={
                     <ProtectedRoute>
-                      <AddCardsPage />
+                      <AppLayout hideHeader bgTheme="deck">
+                        <AddCardsPage />
+                      </AppLayout>
                     </ProtectedRoute>
                   }
                 />
@@ -80,7 +92,19 @@ export default function App() {
                   path="/library"
                   element={
                     <ProtectedRoute>
-                      <LibraryPage />
+                      <AppLayout>
+                        <LibraryPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/store"
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout>
+                        <StorePage />
+                      </AppLayout>
                     </ProtectedRoute>
                   }
                 />

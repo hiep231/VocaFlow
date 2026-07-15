@@ -6,17 +6,13 @@ import { DeckList } from "@/components/dashboard/DeckList";
 import { ProjectionStats } from "@/components/dashboard/ProjectionStats";
 import { DeleteDeckDialog } from "@/components/deck/DeleteDeckDialog";
 import { useDashboard } from "@/hooks/useDashboard";
-import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { calculateLevel } from "@/lib/gamification";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
-
 import { VocabularyList } from "@/components/dashboard/VocabularyList";
 import { Leaderboard } from "@/components/dashboard/Leaderboard";
 import { ScheduleTab } from "@/components/dashboard/ScheduleTab";
-import { calculateLevel } from "@/lib/gamification";
-import { ReleaseNotesModal } from "@/components/ui/ReleaseNotesModal";
-import { useVersionCheck } from "@/hooks/useVersionCheck";
 
 export default function Dashboard() {
   const {
@@ -35,14 +31,10 @@ export default function Dashboard() {
     allCards,
   } = useDashboard();
 
-  const { showReleaseNotes, latestRelease, dismiss } = useVersionCheck();
-
   const [activeTab, setActiveTab] = useState("decks");
 
   return (
-    <div className="min-w-full min-h-screen relative bg-slate-50 dark:bg-slate-950 font-sans">
-      <DashboardHeader onLogout={logout} />
-
+    <div className="w-full relative">
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8 min-h-[calc(100vh-10rem)]">
         <ReviewBanner cardsDue={cardsDue} totalCardsDue={totalCardsDue} />
 
@@ -202,30 +194,11 @@ export default function Dashboard() {
         </div>
       </main>
 
-      <footer className="w-full py-6 text-center text-slate-400 text-sm border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
-        <p>
-          Built with ❤️ by{" "}
-          <span className="font-bold text-slate-700 dark:text-slate-300">
-            Hiep DT
-          </span>
-        </p>
-        <p className="text-xs mt-1 opacity-70">
-          © {new Date().getFullYear()} VocaFlow. All rights reserved.
-        </p>
-      </footer>
-
       <DeleteDeckDialog
         deckToDelete={deckToDelete}
         isDeleting={isDeleting}
         onOpenChange={(open) => !open && setDeckToDelete(null)}
         onConfirm={confirmDeleteDeck}
-      />
-
-      {/* Release Notes — only shown after auth is resolved (guaranteed by AuthProvider + ProtectedRoute) */}
-      <ReleaseNotesModal
-        open={showReleaseNotes}
-        release={latestRelease}
-        onDismiss={dismiss}
       />
     </div>
   );
