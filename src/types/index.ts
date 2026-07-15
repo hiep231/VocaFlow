@@ -1,3 +1,5 @@
+import { FSMState } from "@/lib/fsm";
+
 export type CardType = "vocab" | "grammar" | "sentence";
 
 export interface Card {
@@ -28,6 +30,7 @@ export interface Card {
   interval?: number; // SM-2
   repetitions?: number; // SM-2
   easeFactor?: number; // SM-2
+  fsmState?: FSMState;
   createdAt?: any;
 }
 

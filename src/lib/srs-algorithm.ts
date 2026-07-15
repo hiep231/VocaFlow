@@ -1,3 +1,5 @@
+import { FSMState, FSMAction, transitionCardState } from "@/lib/fsm";
+
 export type ReviewRating = "fail" | "hard" | "good";
 
 export interface ReviewResult {
@@ -11,6 +13,7 @@ export interface SM2Result {
   easeFactor: number;
   nextReview: Date;
   newLevel: number;
+  newFsmState: FSMState;
 }
 
 export function getMidnightLocalTime(date: Date): Date {
@@ -24,8 +27,29 @@ export function calculateSM2(
   interval: number,
   repetitions: number,
   easeFactor: number,
-  currentLevel: number
+  currentLevel: number,
+  currentFsmState?: FSMState
 ): SM2Result {
+  // 1. Infer state if missing (Backwards compatibility)
+  let fsmState: FSMState = currentFsmState || "NEW";
+  if (!currentFsmState && repetitions > 0) {
+    if (interval > 21) {
+      fsmState = "MASTERED";
+    } else {
+      fsmState = "REVIEWING";
+    }
+  }
+
+  // 2. Map quality to FSM Action
+  let action: FSMAction = "RATE_GOOD";
+  if (quality === 1) action = "RATE_FAIL";
+  if (quality === 3) action = "RATE_HARD";
+  if (quality >= 4) action = "RATE_GOOD";
+
+  // 3. Determine next FSM State
+  const nextFsmState = transitionCardState(fsmState, action, interval);
+
+  // 4. Calculate SM-2 as base
   let nextInterval = interval;
   let nextRepetitions = repetitions;
   let nextEaseFactor = easeFactor;
@@ -51,6 +75,19 @@ export function calculateSM2(
     nextEaseFactor = 1.3;
   }
 
+  // 5. Override SM-2 based on FSM State
+  if (nextFsmState === "LAPSED") {
+    nextInterval = 1; // Reset interval
+    // Ease factor is typically penalized but SM-2 base calculation above already did it.
+  } else if (nextFsmState === "LEARNING") {
+    nextInterval = 1; // Short interval for learning
+  } else if (nextFsmState === "NEW") {
+    nextInterval = 0; // Immediate review
+    nextRepetitions = 0;
+  } else if (nextFsmState === "MASTERED") {
+    if (nextInterval < 30) nextInterval = 30; // Enforce minimum long interval
+  }
+
   const now = new Date();
   const nextReviewDate = new Date(now.getTime() + nextInterval * 24 * 60 * 60 * 1000);
   
@@ -70,7 +107,8 @@ export function calculateSM2(
     repetitions: nextRepetitions,
     easeFactor: nextEaseFactor,
     nextReview: midnightNextReview,
-    newLevel
+    newLevel,
+    newFsmState: nextFsmState
   };
 }
 

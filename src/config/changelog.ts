@@ -1,4 +1,4 @@
-export const CURRENT_APP_VERSION = "1.5.0";
+export const CURRENT_APP_VERSION = "1.6.0";
 
 export interface ReleaseEntry {
   version: string;
@@ -10,6 +10,18 @@ export interface ReleaseEntry {
 }
 
 export const CHANGELOG: ReleaseEntry[] = [
+  {
+    version: "1.6.0",
+    date: "2026-07-15",
+    title: "Advanced SRS Engine (FSM Core)",
+    features: [
+      "FSM Core Architecture — Refactored the core spaced repetition algorithm to use a robust Finite State Machine (FSM). Cards now transition cleanly between NEW, LEARNING, REVIEWING, LAPSED, and MASTERED states.",
+    ],
+    improvements: [
+      "Smarter Interval Calculations — Improved logic overrides SM-2 baseline based on your actual learning stage (e.g., dropping intervals immediately when lapsing).",
+      "Seamless Backward Compatibility — Older cards automatically infer their FSM states behind the scenes based on their history so you don't lose any progress.",
+    ],
+  },
   {
     version: "1.5.0",
     date: "2026-07-15",

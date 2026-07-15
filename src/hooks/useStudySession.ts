@@ -191,7 +191,8 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
             currentInterval,
             currentRepetitions,
             currentEaseFactor,
-            currentCard.level ?? 0
+            currentCard.level ?? 0,
+            currentCard.fsmState
           );
 
           // 1. Critical: Update Card SRS
@@ -202,6 +203,7 @@ export function useStudySession(deckId?: string, options?: { cram?: boolean }) {
             interval: sm2Result.interval,
             repetitions: sm2Result.repetitions,
             easeFactor: sm2Result.easeFactor,
+            fsmState: sm2Result.newFsmState,
           });
 
           // Invalidate queries so dashboard and future sessions get fresh data
